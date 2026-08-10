@@ -128,4 +128,59 @@ describe('AllExceptionsFilter', () => {
     const body = JSON.stringify(json.mock.calls[0]?.[0]);
     expect(body).not.toContain('SECRET-LEAK-SENTINEL-2');
   });
+
+  // `body-parser` runs ahead of the Nest pipeline and throws `http-errors`
+  // objects rather than `HttpException`s. Mapping those to 500 would break
+  // the §6 guarantee that no client input can produce a server error.
+  it('preserves the status of an http-errors style client error', () => {
+    const { host, json, status } = createHost('req-6');
+    const payloadTooLarge = Object.assign(
+      new Error('request entity too large'),
+      {
+        status: 413,
+        statusCode: 413,
+        expose: true,
+      },
+    );
+
+    filter.catch(payloadTooLarge, host);
+
+    expect(status).toHaveBeenCalledWith(413);
+    expect(json).toHaveBeenCalledWith({
+      statusCode: 413,
+      error: 'Payload Too Large',
+      message: 'request entity too large',
+      requestId: 'req-6',
+    });
+  });
+
+  it('hides the message of a non-exposed http-errors client error', () => {
+    const { host, json, status } = createHost('req-7');
+    const hidden = Object.assign(new Error('INTERNAL-DETAIL-SENTINEL'), {
+      status: 400,
+      expose: false,
+    });
+
+    filter.catch(hidden, host);
+
+    expect(status).toHaveBeenCalledWith(400);
+    expect(JSON.stringify(json.mock.calls[0]?.[0])).not.toContain(
+      'INTERNAL-DETAIL-SENTINEL',
+    );
+  });
+
+  it('does not trust a 5xx carried by a non-HttpException', () => {
+    const { host, json, status } = createHost('req-8');
+    const serverError = Object.assign(new Error('DB-DSN-SENTINEL'), {
+      status: 503,
+      expose: true,
+    });
+
+    filter.catch(serverError, host);
+
+    expect(status).toHaveBeenCalledWith(500);
+    expect(JSON.stringify(json.mock.calls[0]?.[0])).not.toContain(
+      'DB-DSN-SENTINEL',
+    );
+  });
 });
