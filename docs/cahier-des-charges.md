@@ -243,6 +243,8 @@ Variables d'environnement, chargées via `@nestjs/config` (module global) et val
 
 `ValidationPipe` global (`whitelist`, `forbidNonWhitelisted`, `transform`) + filtre d'exceptions global produisant un format homogène :
 
+**Limite structurelle du `ValidationPipe` ici** : `whitelist: true` supprime toute propriété non décorée d'un DTO. Or trois des quatre routes acceptent un **JSON arbitraire** — un DTO en classe y réduirait systématiquement le payload à `{}`, ce qui casserait les endpoints au lieu de les protéger. Les corps de requête sont donc typés par des **interfaces** TypeScript (que Nest expose comme métatype `Object`, et que le pipe ignore de ce fait), et validés par des fonctions de parsing explicites levant `BadRequestException` : `parseSignRequest`, `parseVerifyRequest`, et leurs équivalents côté crypto. Le `ValidationPipe` global reste en place pour les DTO à forme fixe qui pourraient apparaître plus tard. Corollaire assumé : `class-validator` et `class-transformer` ne sont pas utilisés, et ne sont donc pas installés.
+
 ```json
 {
   "statusCode": 400,
