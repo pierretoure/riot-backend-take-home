@@ -215,7 +215,8 @@ Fonction pure `canonicalize(value: JsonValue): string`, inspirée de RFC 8785 (J
 
 - **Objets** : clés triées par ordre lexicographique de code unit UTF-16, **récursivement à tous les niveaux**.
 - **Tableaux** : ordre **strictement préservé** (c'est une donnée, pas un ensemble) ; les éléments sont canonicalisés récursivement.
-- **Sérialisation** : `JSON.stringify` sur la structure triée — ce qui fixe la représentation des nombres (format ES6/`Number::toString`), des chaînes et des booléens.
+- **Sérialisation** : les conteneurs (`{…}`, `[…]`) sont assemblés **manuellement** à partir du tableau de clés trié ; seules les primitives passent par `JSON.stringify`, ce qui fixe la représentation des nombres (format ES6/`Number::toString`), des chaînes et des booléens.
+- **Pourquoi pas `JSON.stringify` sur un objet retrié** : la spécification ECMAScript impose que les clés ressemblant à des indices de tableau (`"1"`, `"2"`, `"10"`) soient énumérées en ordre **numérique croissant**, avant toutes les autres clés, quel que soit l'ordre d'insertion. `Object.keys` et donc `JSON.stringify` héritent de ce comportement. Reconstruire un objet avec les clés réinsérées dans l'ordre trié puis le sérialiser **annulerait silencieusement le tri** : `{"1","10","2"}` deviendrait `{"1","2","10"}`. Assembler la chaîne soi-même contourne entièrement le moteur. Un test dédié verrouille ce cas.
 - **`null`** : conservé comme valeur à part entière ; `{"a": null}` et `{}` produisent des signatures **différentes**.
 - **Écart assumé vs RFC 8785 strict** : pas de normalisation Unicode NFC appliquée aux chaînes. Deux représentations Unicode différentes du même caractère perçu produisent donc deux signatures différentes. Acceptable ici (signataire et vérificateur sont le même service) et documenté.
 
