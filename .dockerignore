@@ -1,0 +1,30 @@
+node_modules
+dist
+coverage
+.git
+.github
+docs
+
+# environment
+.env
+.env.*
+!.env.example
+
+# tests
+test
+**/*.test.ts
+**/test/**
+
+# editor / OS
+.vscode
+.idea
+.DS_Store
+
+# logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# misc
+.nyc_output
+README.md
