@@ -75,9 +75,12 @@ describe('POST /sign -> POST /verify (e2e)', () => {
 
     const reordered = shuffleKeysDeep(data, makeRng(42));
 
-    // The shuffle must actually have touched key order for the test to be
-    // meaningful; both structures must remain deeply equal as data.
+    // Both structures must remain deeply equal as data...
     expect(reordered).toStrictEqual(data);
+    // ...but their serialized key order must actually differ, otherwise the
+    // test would still pass with a no-op shuffle and would prove nothing
+    // about order invariance. `toStrictEqual` alone is order-insensitive.
+    expect(JSON.stringify(reordered)).not.toBe(JSON.stringify(data));
 
     const response = await request(app.getHttpServer())
       .post('/verify')
