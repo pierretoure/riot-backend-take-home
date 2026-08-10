@@ -69,3 +69,9 @@ jobs:
       - name: Coverage report
         run: pnpm test:cov
         continue-on-error: true
+
+      # Also informational: a new advisory published upstream should surface
+      # here, but must not turn a green commit red without any code change.
+      - name: Dependency audit
+        run: pnpm audit --prod
+        continue-on-error: true
