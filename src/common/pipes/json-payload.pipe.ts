@@ -3,11 +3,11 @@ import {
   Injectable,
   type PipeTransform,
 } from '@nestjs/common';
-import type { JsonObject } from '../../common/json/json.types';
+import type { JsonObject } from '../json/json.types';
 
 /**
- * `/encrypt` and `/decrypt` accept "any JSON payload" (subject.md), which
- * rules out a class-validator DTO: `whitelist`/`forbidNonWhitelisted`
+ * `/encrypt`, `/decrypt` and `/sign` accept "any JSON payload" (subject.md),
+ * which rules out a class-validator DTO: `whitelist`/`forbidNonWhitelisted`
  * (applied globally, see `applyGlobalConfig`) would strip or reject every
  * property of a payload whose shape isn't known in advance. This pipe
  * instead enforces the one structural rule that *is* fixed regardless of
@@ -17,7 +17,8 @@ import type { JsonObject } from '../../common/json/json.types';
  * Bound at the parameter level (`@Body(JsonPayloadPipe)`), it runs after the
  * global `ValidationPipe`, which is a no-op here since the controller
  * types its body parameter as `unknown`/a plain interface rather than a
- * validated class.
+ * validated class. Shared across the crypto and signature domains
+ * (cahier des charges §6, harmonized in the app-assembly step).
  */
 @Injectable()
 export class JsonPayloadPipe implements PipeTransform<unknown, JsonObject> {
