@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+env:
+  # Test-only fixture, not a real secret. Provided at job level (rather than
+  # relying solely on src/testing/jest-setup-env.ts) so that CI mirrors a
+  # real deployment environment: AppModule validates HMAC_SECRET at
+  # ConfigModule.forRoot() time regardless of how the process is started
+  # (jest, `nest start`, a future smoke-test step, ...). Keeping it here
+  # also makes the requirement "the app refuses to start without
+  # HMAC_SECRET" explicit and visible in the pipeline definition instead of
+  # implicit in a test helper.
+  HMAC_SECRET: 'ci-hmac-secret-fixture-please-do-not-use-in-prod-32chars'
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.12.1
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Unit tests
+        run: pnpm test:unit
+
+      - name: Integration tests
+        run: pnpm test:integration
+
+      - name: E2E tests
+        run: pnpm test:e2e
+
+      - name: Build
+        run: pnpm build
