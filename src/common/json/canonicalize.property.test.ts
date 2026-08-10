@@ -1,6 +1,7 @@
 import fc from 'fast-check';
 import { canonicalize } from './canonicalize';
-import type { JsonObject, JsonValue } from './json.types';
+import { shuffleKeysDeep } from '../../testing/shuffle-keys-deep';
+import type { JsonValue } from './json.types';
 
 /**
  * Arbitrary producing varied JSON values: unicode strings, empty strings,
@@ -28,44 +29,6 @@ const jsonValueArbitrary: fc.Arbitrary<JsonValue> = fc.letrec<{
     ),
   ),
 })).value;
-
-/**
- * Recursively shuffles object key order without changing their content, so
- * that we can assert canonicalize is insensitive to input key order at every
- * nesting level.
- */
-function shuffleKeysDeep(value: JsonValue, rng: () => number): JsonValue {
-  if (Array.isArray(value)) {
-    return value.map((element) => shuffleKeysDeep(element, rng));
-  }
-
-  if (value !== null && typeof value === 'object') {
-    const keys = Object.keys(value);
-    const shuffled = [...keys];
-
-    // Fisher-Yates shuffle driven by the supplied deterministic RNG.
-    for (let i = shuffled.length - 1; i > 0; i -= 1) {
-      const j = Math.floor(rng() * (i + 1));
-      const a = shuffled[i];
-      const b = shuffled[j];
-      if (a !== undefined && b !== undefined) {
-        shuffled[i] = b;
-        shuffled[j] = a;
-      }
-    }
-
-    const result: JsonObject = {};
-    for (const key of shuffled) {
-      const original = value[key];
-      if (original !== undefined) {
-        result[key] = shuffleKeysDeep(original, rng);
-      }
-    }
-    return result;
-  }
-
-  return value;
-}
 
 /**
  * Structural equality reference (independent of key order), used to detect

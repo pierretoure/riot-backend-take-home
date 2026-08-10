@@ -2,6 +2,7 @@ import fc from 'fast-check';
 import { ConfigService } from '@nestjs/config';
 import { HmacSha256Signer } from './adapters/hmac-sha256.signer';
 import { SignatureService } from './signature.service';
+import { shuffleKeysDeep } from '../testing/shuffle-keys-deep';
 import type { JsonObject, JsonValue } from '../common/json/json.types';
 
 /**
@@ -35,39 +36,6 @@ const jsonObjectArbitrary: fc.Arbitrary<JsonObject> = fc.dictionary(
   jsonValueArbitrary,
   { minKeys: 1, maxKeys: 5 },
 );
-
-/** Recursively shuffles object key order, leaving content untouched. */
-function shuffleKeysDeep(value: JsonValue, rng: () => number): JsonValue {
-  if (Array.isArray(value)) {
-    return value.map((element) => shuffleKeysDeep(element, rng));
-  }
-
-  if (value !== null && typeof value === 'object') {
-    const keys = Object.keys(value);
-    const shuffled = [...keys];
-
-    for (let i = shuffled.length - 1; i > 0; i -= 1) {
-      const j = Math.floor(rng() * (i + 1));
-      const a = shuffled[i];
-      const b = shuffled[j];
-      if (a !== undefined && b !== undefined) {
-        shuffled[i] = b;
-        shuffled[j] = a;
-      }
-    }
-
-    const result: JsonObject = {};
-    for (const key of shuffled) {
-      const original = value[key];
-      if (original !== undefined) {
-        result[key] = shuffleKeysDeep(original, rng);
-      }
-    }
-    return result;
-  }
-
-  return value;
-}
 
 function makeService(): SignatureService {
   const signer = new HmacSha256Signer(

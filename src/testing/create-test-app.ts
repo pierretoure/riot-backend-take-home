@@ -26,7 +26,13 @@ export async function createTestApp(
   const app = moduleRef.createNestApplication<NestExpressApplication>();
   applyGlobalConfig(app);
   beforeInit?.(app);
-  await app.init();
+
+  // `listen(0)` rather than `init()`: supertest reuses an already-listening
+  // server, but spins up a throwaway one bound to an ephemeral port for
+  // *every* request otherwise. Under parallel Jest workers that churn was an
+  // observed source of spurious 404s and ECONNRESETs — failures of the test
+  // harness, not of the application. One server per suite removes it.
+  await app.listen(0);
 
   return app;
 }

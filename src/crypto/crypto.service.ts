@@ -95,6 +95,30 @@ export class CryptoService {
   constructor(@Inject(CIPHER) private readonly cipher: Cipher) {}
 
   /**
+   * Adds an own enumerable property to `target`.
+   *
+   * Plain assignment (`target[key] = value`) cannot be used: for the key
+   * `__proto__`, it invokes the `Object.prototype` setter and reassigns the
+   * target's prototype instead of creating a property. With a string value
+   * the assignment is silently ignored, so `{"__proto__": …}` would vanish
+   * from the payload and break the round-trip guarantee; with an object
+   * value it would replace the result's prototype. `defineProperty` treats
+   * every key as ordinary data.
+   */
+  private static define(
+    target: JsonObject,
+    key: string,
+    value: JsonValue,
+  ): void {
+    Object.defineProperty(target, key, {
+      value,
+      enumerable: true,
+      writable: true,
+      configurable: true,
+    });
+  }
+
+  /**
    * Encrypts every depth-1 property: `cipher.encrypt(JSON.stringify(value))`.
    * `JSON.stringify` is applied unconditionally, strings included, which is
    * what allows `decryptPayload` to restore the original type.
@@ -106,7 +130,11 @@ export class CryptoService {
     for (const key of Object.keys(payload)) {
       const value = payload[key] ?? null;
       assertSafeDepth(value, key);
-      result[key] = this.cipher.encrypt(JSON.stringify(value));
+      CryptoService.define(
+        result,
+        key,
+        this.cipher.encrypt(JSON.stringify(value)),
+      );
     }
 
     return result;
@@ -129,14 +157,14 @@ export class CryptoService {
         const parsed: unknown = JSON.parse(decoded);
         const parsedValue = parsed as JsonValue;
         assertSafeDepth(parsedValue, key);
-        result[key] = parsedValue;
+        CryptoService.define(result, key, parsedValue);
       } else {
         // Pass-through values are not re-serialized here, but they will be
         // by Express's `res.json()` when the response is sent — the same
         // `JSON.stringify` stack-overflow risk documented above applies, so
         // the depth guard is enforced here too.
         assertSafeDepth(value, key);
-        result[key] = value;
+        CryptoService.define(result, key, value);
       }
     }
 

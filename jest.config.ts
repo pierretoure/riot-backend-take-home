@@ -4,6 +4,9 @@ import type { Config } from 'jest';
 const base: Config = {
   rootDir: '.',
   testEnvironment: 'node',
+  // Runs before any module is imported, so `AppModule`'s import-time
+  // `ConfigModule.forRoot()` validation always sees a valid environment.
+  setupFiles: ['<rootDir>/src/testing/jest-setup-env.ts'],
   transform: {
     '^.+\\.(t|j)s$': 'ts-jest',
   },

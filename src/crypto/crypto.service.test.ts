@@ -170,4 +170,49 @@ describe('CryptoService', () => {
       expect(decrypted).toEqual({ ...original, birth_date: '1998-11-19' });
     });
   });
+
+  // A plain `result[key] = value` invokes the `Object.prototype` setter for
+  // the key `__proto__`, which silently drops the property (string value) or
+  // replaces the result's prototype (object value). Both break the
+  // round-trip guarantee, so properties are added with `defineProperty`.
+  describe('prototype-sensitive keys', () => {
+    const dangerousKeys = ['__proto__', 'constructor', 'prototype'];
+
+    it.each(dangerousKeys)('round-trips the %s key without loss', (key) => {
+      const original = JSON.parse(
+        `{"${key}": {"nested": "value"}, "safe": 1}`,
+      ) as JsonObject;
+
+      const decrypted = service.decryptPayload(
+        service.encryptPayload(original),
+      );
+
+      expect(Object.keys(decrypted).sort()).toEqual([key, 'safe'].sort());
+      expect(decrypted).toEqual(original);
+    });
+
+    it('keeps a __proto__ property own and enumerable rather than reassigning the prototype', () => {
+      const original = JSON.parse(
+        '{"__proto__": {"polluted": "yes"}}',
+      ) as JsonObject;
+
+      const encrypted = service.encryptPayload(original);
+
+      expect(Object.keys(encrypted)).toEqual(['__proto__']);
+      expect(
+        Object.getOwnPropertyDescriptor(encrypted, '__proto__')?.enumerable,
+      ).toBe(true);
+      expect(Object.getPrototypeOf(encrypted)).toBe(Object.prototype);
+    });
+
+    it('never pollutes Object.prototype', () => {
+      const original = JSON.parse(
+        '{"__proto__": {"polluted": "yes"}}',
+      ) as JsonObject;
+
+      service.decryptPayload(service.encryptPayload(original));
+
+      expect(({} as Record<string, unknown>).polluted).toBeUndefined();
+    });
+  });
 });
