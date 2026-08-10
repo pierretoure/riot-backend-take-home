@@ -15,6 +15,15 @@ env:
   # implicit in a test helper.
   HMAC_SECRET: 'ci-hmac-secret-fixture-please-do-not-use-in-prod-32chars'
 
+# The workflow only reads the repository; nothing here publishes or deploys.
+permissions:
+  contents: read
+
+# A new push supersedes the previous run on the same ref.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   ci:
     runs-on: ubuntu-latest
@@ -53,3 +62,10 @@ jobs:
 
       - name: Build
         run: pnpm build
+
+      # Reported for information only (cahier des charges §11): no coverage
+      # threshold gates the build. This is the one step allowed to fail
+      # without failing the job — every step above is a hard gate.
+      - name: Coverage report
+        run: pnpm test:cov
+        continue-on-error: true
