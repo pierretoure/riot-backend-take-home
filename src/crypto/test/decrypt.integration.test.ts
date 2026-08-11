@@ -3,10 +3,6 @@ import type { NestExpressApplication } from '@nestjs/platform-express';
 import { createTestApp } from '../../testing/create-test-app';
 import { CryptoModule } from '../crypto.module';
 
-/**
- * `POST /decrypt` integration tests: reproduces the literal examples from
- * subject.md against a real Nest application.
- */
 describe('POST /decrypt', () => {
   let app: NestExpressApplication;
 

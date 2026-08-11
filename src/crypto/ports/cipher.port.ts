@@ -1,8 +1,4 @@
 /**
- * Port for the encryption algorithm used by `/encrypt` and `/decrypt`. The
- * domain (`CryptoService`) only ever depends on this interface, never on a
- * concrete algorithm.
- *
  * `looksEncrypted` lives on the port rather than on `CryptoService` because
  * the detection heuristic is algorithm-specific: a Base64 implementation and
  * an AES implementation do not share the same notion of "this looks like
@@ -16,5 +12,4 @@ export interface Cipher {
   looksEncrypted(value: string): boolean;
 }
 
-/** DI token used to bind a concrete `Cipher` implementation. */
 export const CIPHER = Symbol('CIPHER');

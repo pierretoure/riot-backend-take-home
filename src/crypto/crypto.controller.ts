@@ -4,11 +4,6 @@ import type { JsonObject } from '../common/json/json.types';
 import { JsonPayloadPipe } from '../common/pipes/json-payload.pipe';
 import { CryptoService } from './crypto.service';
 
-/**
- * `/encrypt` and `/decrypt`. Contains no business logic: request shape is
- * enforced by `JsonPayloadPipe`, and the actual encryption/decryption is
- * delegated to `CryptoService`.
- */
 @ApiTags('crypto')
 @Controller()
 export class CryptoController {
