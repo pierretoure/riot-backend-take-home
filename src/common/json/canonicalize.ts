@@ -1,8 +1,11 @@
 import type { JsonValue } from './json.types';
 
 /**
- * Serializes a `JsonValue` into a canonical string form, inspired by
- * RFC 8785 (JSON Canonicalization Scheme / JCS).
+ * Serializes a `JsonValue` into a canonical string form following RFC 8785
+ * (JSON Canonicalization Scheme / JCS), with one deliberate deviation: no
+ * Unicode NFC normalization is applied. Output is therefore NOT
+ * interoperable with a strict JCS implementation for inputs containing
+ * decomposed Unicode — see the deviation note at the end of this block.
  *
  * Rules applied:
  * - Object keys are sorted lexicographically by UTF-16 code unit, at every
