@@ -65,6 +65,7 @@
     "node": ">=22"
   },
   "pnpm": {
+    "//": "@nestjs/swagger 11.4.6 (the latest release) hard-pins js-yaml to exactly 5.2.1, which carries GHSA-pm4m-ph32-ghv5: exponential parsing time in flow collections, high severity, denial of service, patched in 5.2.2. No swagger release resolves it, so this override is the only way to keep the production tree clean. Drop it once @nestjs/swagger pins a patched version.",
     "overrides": {
       "js-yaml@>=5.0.0 <5.2.2": "5.2.3"
     }

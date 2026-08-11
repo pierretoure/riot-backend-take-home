@@ -1,4 +1,3 @@
-/** Port for a pluggable signature algorithm. */
 export interface Signer {
   /** Computes the signature of an already-serialized payload string. */
   sign(payload: string): string;
