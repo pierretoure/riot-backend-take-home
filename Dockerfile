@@ -19,7 +19,7 @@ RUN pnpm install --frozen-lockfile
 # Compiles TypeScript to dist/ using the full dependency set from `deps`.
 FROM base AS build
 COPY --from=deps /app/node_modules ./node_modules
-COPY package.json pnpm-lock.yaml tsconfig.json tsconfig.build.json nest-cli.json ./
+COPY package.json pnpm-lock.yaml tsconfig.json nest.build.json nest-cli.json ./
 COPY src ./src
 RUN pnpm build
 
