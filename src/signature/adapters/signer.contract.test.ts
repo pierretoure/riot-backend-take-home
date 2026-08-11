@@ -1,31 +1,13 @@
-import { timingSafeEqual } from 'node:crypto';
 import { ConfigService } from '@nestjs/config';
 import { HmacSha256Signer } from './hmac-sha256.signer';
 import type { Signer } from '../ports/signer.port';
 
 /**
- * Minimal alternative `Signer` implementation. It exists solely to prove
- * that the `Signer` port abstraction is real — that the domain can be
- * exercised against more than one algorithm — and is never wired into the
- * application.
+ * Contract test for the `Signer` port: every adapter must satisfy the same
+ * behavioural contract regardless of its concrete algorithm. Run via
+ * `describe.each` so a second adapter only has to be added to the list
+ * below to be held to the same rules.
  */
-class UppercaseHexSigner implements Signer {
-  sign(payload: string): string {
-    return Buffer.from(payload, 'utf8').toString('hex').toUpperCase();
-  }
-
-  verify(payload: string, signature: string): boolean {
-    const expected = Buffer.from(this.sign(payload));
-    const candidate = Buffer.from(signature);
-
-    if (expected.length !== candidate.length) {
-      return false;
-    }
-
-    return timingSafeEqual(expected, candidate);
-  }
-}
-
 const implementations: Array<[string, () => Signer]> = [
   [
     'HmacSha256Signer',
@@ -34,7 +16,6 @@ const implementations: Array<[string, () => Signer]> = [
         new ConfigService({ SIGNER_SECRET: 'a'.repeat(32) }),
       ),
   ],
-  ['UppercaseHexSigner', () => new UppercaseHexSigner()],
 ];
 
 describe.each(implementations)('Signer contract: %s', (_name, createSigner) => {

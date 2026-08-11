@@ -83,7 +83,7 @@ providers: [
 ]
 ```
 
-**Preuve de l'abstraction** : une seconde implémentation triviale (`RotCipher` ou `Aes256GcmCipher`) est fournie et la suite de tests unitaires du domaine est exécutée contre les deux via un `describe.each`. Elle n'est pas activée en production.
+**Preuve de l'abstraction** : la suite de contrat du port est exécutée via un `describe.each` sur la liste des adapters, de sorte qu'une seconde implémentation n'a qu'à y être ajoutée pour être tenue aux mêmes règles.
 
 ### 3.4 Arborescence cible
 
@@ -118,7 +118,6 @@ src/
 │   ├── adapters/
 │   │   ├── base64.cipher.ts
 │   │   ├── base64.cipher.test.ts
-│   │   ├── rot.cipher.ts               (démonstration de l'interchangeabilité)
 │   │   └── cipher.contract.test.ts     suite partagée, jouée contre tous les adapters
 │   ├── crypto.service.ts
 │   ├── crypto.service.test.ts

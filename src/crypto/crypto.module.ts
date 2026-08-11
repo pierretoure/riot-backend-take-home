@@ -5,9 +5,9 @@ import { CryptoService } from './crypto.service';
 import { CIPHER } from './ports/cipher.port';
 
 /**
- * Wires the crypto domain together. Swapping the encryption algorithm (e.g.
- * to `RotCipher`) requires changing only the `useClass` below —
- * `CryptoService` and `CryptoController` are unaffected.
+ * Wires the crypto domain together. Swapping the encryption algorithm
+ * requires changing only the `useClass` below — `CryptoService` and
+ * `CryptoController` are unaffected.
  */
 @Module({
   controllers: [CryptoController],

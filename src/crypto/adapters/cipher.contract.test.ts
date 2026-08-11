@@ -1,17 +1,14 @@
 import type { Cipher } from '../ports/cipher.port';
 import { Base64Cipher } from './base64.cipher';
-import { RotCipher } from './rot.cipher';
 
 /**
  * Contract test for the `Cipher` port: every adapter must satisfy the same
  * behavioural contract regardless of its concrete algorithm. Run via
- * `describe.each` against both `Base64Cipher` (the one actually wired in
- * `crypto.module.ts`) and `RotCipher` (kept unused, purely to prove the
- * abstraction holds).
+ * `describe.each` so a second adapter only has to be added to the list
+ * below to be held to the same rules.
  */
 const adapters: Array<{ name: string; create: () => Cipher }> = [
   { name: 'Base64Cipher', create: () => new Base64Cipher() },
-  { name: 'RotCipher', create: () => new RotCipher() },
 ];
 
 describe.each(adapters)('$name (Cipher contract)', ({ create }) => {
