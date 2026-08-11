@@ -13,11 +13,6 @@ const THROTTLED_ROUTES = ['/encrypt', '/decrypt', '/sign', '/verify'] as const;
  * be rejected just as spending it on one is — which is exactly what the
  * throttler's stock per-handler keying would *not* do, hence
  * `ClientThrottlerGuard`.
- *
- * This lives at the e2e level, and only here, because it spans all four
- * domains plus the `/health` exemption; asserting it inside a per-endpoint
- * suite would test a single-route burst, which stays green even if the
- * budget stops being shared.
  */
 describe('Rate limiting (e2e)', () => {
   let app: NestExpressApplication;
@@ -31,14 +26,7 @@ describe('Rate limiting (e2e)', () => {
   });
 
   /**
-   * Ten sequential rounds over the four endpoints. Sequential on purpose:
-   * the throttler counts hits as they arrive, so serialising them makes
-   * "the tail of the burst is rejected" a deterministic outcome rather than
-   * a race between in-flight requests.
-   *
-   * The bodies are deliberately not tailored to each endpoint — guards run
-   * before validation pipes, so throttling must apply whatever the payload
-   * turns out to be, and mixing 200s with 400s keeps that honest.
+   * Ten sequential rounds over the four endpoints.
    */
   async function burstAcrossEveryEndpoint(): Promise<number[]> {
     const statuses: number[] = [];
