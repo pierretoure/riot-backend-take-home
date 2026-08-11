@@ -51,6 +51,44 @@ describe('POST /sign (integration)', () => {
     expect(signatureOf(a.body)).toBe(signatureOf(b.body));
   });
 
+  it('produces different signatures for the NFC and NFD spellings of a character', async () => {
+    // Same perceived text ("cafe" + acute accent), two Unicode encodings:
+    // precomposed U+00E9 versus decomposed "e" + U+0301. `canonicalize`
+    // deliberately skips the RFC 8785 NFC normalization step, so the two
+    // spellings stay distinct payloads down to the signature.
+    const composed = 'caf\u00e9';
+    const decomposed = 'cafe\u0301';
+    expect(composed).not.toBe(decomposed);
+
+    const nfc = await request(app.getHttpServer())
+      .post('/sign')
+      .send({ message: composed });
+    const nfd = await request(app.getHttpServer())
+      .post('/sign')
+      .send({ message: decomposed });
+
+    expect(nfc.status).toBe(200);
+    expect(nfd.status).toBe(200);
+    expect(signatureOf(nfc.body)).not.toBe(signatureOf(nfd.body));
+  });
+
+  it('produces the same signature whether a character is JSON-escaped or literal', async () => {
+    // A \u00e9 escape and a literal U+00E9 parse to the very same string,
+    // so this purely transport-level difference must not reach the signature.
+    const escaped = await request(app.getHttpServer())
+      .post('/sign')
+      .set('Content-Type', 'application/json')
+      .send('{"message":"caf\\u00e9"}');
+    const literal = await request(app.getHttpServer())
+      .post('/sign')
+      .set('Content-Type', 'application/json')
+      .send('{"message":"caf\u00e9"}');
+
+    expect(escaped.status).toBe(200);
+    expect(literal.status).toBe(200);
+    expect(signatureOf(escaped.body)).toBe(signatureOf(literal.body));
+  });
+
   it('rejects a non-object root (array) with 400', async () => {
     const response = await request(app.getHttpServer())
       .post('/sign')
