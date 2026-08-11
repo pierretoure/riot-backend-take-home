@@ -1,6 +1,7 @@
 import request from 'supertest';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import { createTestApp } from '../../testing/create-test-app';
+import { burstStatuses } from '../../testing/rate-limit';
 import { setupSwagger } from '../../common/setup-swagger';
 import { AppModule } from '../../app.module';
 
@@ -48,5 +49,31 @@ describe('GET /health and Swagger documentation (app assembly)', () => {
 
     expect(response.status).toBe(200);
     expect(JSON.stringify(response.body)).not.toContain(SIGNER_SECRET);
+  });
+
+  describe('rate limiting', () => {
+    let throttledApp: NestExpressApplication;
+
+    // A dedicated application, so exhausting the quota below leaves the
+    // assertions above untouched.
+    beforeAll(async () => {
+      throttledApp = await createTestApp([AppModule]);
+    });
+
+    afterAll(async () => {
+      await throttledApp.close();
+    });
+
+    it('never throttles GET /health, even after exhausting the limit elsewhere', async () => {
+      const statuses = await burstStatuses(throttledApp, '/encrypt', { a: 1 });
+      expect(statuses).toContain(429);
+
+      const response = await request(throttledApp.getHttpServer()).get(
+        '/health',
+      );
+
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual({ status: 'ok' });
+    });
   });
 });

@@ -2,6 +2,8 @@ import request from 'supertest';
 import { ConfigModule } from '@nestjs/config';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import { createTestApp } from '../../testing/create-test-app';
+import { burstStatuses } from '../../testing/rate-limit';
+import { AppModule } from '../../app.module';
 import { SignatureModule } from '../signature.module';
 
 const SIGNER_SECRET = 'a'.repeat(32);
@@ -108,5 +110,28 @@ describe('POST /sign (integration)', () => {
       .send('42');
 
     expect(response.status).toBe(400);
+  });
+
+  describe('rate limiting', () => {
+    let throttledApp: NestExpressApplication;
+
+    // A dedicated application: the guard is global to `AppModule` rather than
+    // to `SignatureModule`, and the burst below must not exhaust the quota of
+    // the functional cases above.
+    beforeAll(async () => {
+      throttledApp = await createTestApp([AppModule]);
+    });
+
+    afterAll(async () => {
+      await throttledApp.close();
+    });
+
+    it('returns 429 once the configured request threshold is exceeded', async () => {
+      const statuses = await burstStatuses(throttledApp, '/sign', {
+        message: 'Hello World',
+      });
+
+      expect(statuses).toContain(429);
+    });
   });
 });
