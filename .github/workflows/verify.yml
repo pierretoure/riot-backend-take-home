@@ -1,7 +1,11 @@
-name: CI
+name: Verify
 
 on:
+  # Branch commits are covered by the pull_request run; without this filter
+  # every commit on a PR branch triggers two identical runs, and concurrency
+  # cannot dedupe them because the two events carry a different github.ref.
   push:
+    branches: [main]
   pull_request:
 
 env:
@@ -12,20 +16,22 @@ permissions:
   contents: read
 
 concurrency:
-  group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  group: verify-${{ github.ref }}
+  # Superseded PR pushes are worth cancelling; a run on main is not.
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
-  ci:
+  verify:
+    name: Lint, test and build
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # Version read from the "packageManager" field of package.json.
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
-        with:
-          version: 10.12.1
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -59,6 +65,14 @@ jobs:
       - name: Coverage report
         run: pnpm test:cov
         continue-on-error: true
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage
+          path: coverage/
+          retention-days: 7
 
       # Informational only: a new advisory published upstream must not turn
       # a green commit red without any code change.
