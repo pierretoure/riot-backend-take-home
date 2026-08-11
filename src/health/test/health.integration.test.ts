@@ -27,17 +27,23 @@ describe('GET /health and Swagger documentation (app assembly)', () => {
     expect(response.body).toEqual({ status: 'ok' });
   });
 
-  it('serves an OpenAPI document on /docs-json containing all 4 routes', async () => {
+  it('serves an OpenAPI document on /docs-json containing every route', async () => {
     const response = await request(app.getHttpServer()).get('/docs-json');
 
     expect(response.status).toBe(200);
     const paths = (response.body as { paths: Record<string, unknown> }).paths;
     expect(Object.keys(paths)).toEqual(
-      expect.arrayContaining(['/encrypt', '/decrypt', '/sign', '/verify']),
+      expect.arrayContaining([
+        '/encrypt',
+        '/decrypt',
+        '/sign',
+        '/verify',
+        '/health',
+      ]),
     );
   });
 
-  it('never leaks the HMAC secret in /docs-json', async () => {
+  it('never leaks the signer secret in /docs-json', async () => {
     const response = await request(app.getHttpServer()).get('/docs-json');
 
     expect(response.status).toBe(200);
