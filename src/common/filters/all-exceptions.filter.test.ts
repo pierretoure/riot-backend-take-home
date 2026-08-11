@@ -131,7 +131,7 @@ describe('AllExceptionsFilter', () => {
 
   // `body-parser` runs ahead of the Nest pipeline and throws `http-errors`
   // objects rather than `HttpException`s. Mapping those to 500 would break
-  // the §6 guarantee that no client input can produce a server error.
+  // the guarantee that no client input can produce a server error.
   it('preserves the status of an http-errors style client error', () => {
     const { host, json, status } = createHost('req-6');
     const payloadTooLarge = Object.assign(

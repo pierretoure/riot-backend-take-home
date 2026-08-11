@@ -48,7 +48,7 @@ interface HttpErrorLike {
  * exception. Returns `undefined` for anything else, including 5xx: an
  * unexpected server failure must stay a generic 500 with no detail.
  */
-function clientErrorStatus(exception: unknown): number | undefined {
+function extractSafeClientErrorStatus(exception: unknown): number | undefined {
   if (typeof exception !== 'object' || exception === null) {
     return undefined;
   }
@@ -69,8 +69,7 @@ function clientErrorStatus(exception: unknown): number | undefined {
 }
 
 /**
- * Global exception filter producing the homogeneous error format defined in
- * the cahier des charges §6: `{ statusCode, error, message, requestId }`.
+ * Global exception filter producing a homogeneous error format.
  *
  * Any exception that is not a Nest `HttpException` is treated as an
  * unexpected server error: its stack trace is logged server-side, but the
@@ -139,8 +138,8 @@ export class AllExceptionsFilter implements ExceptionFilter {
     // Express middleware running ahead of Nest's pipeline throws
     // `http-errors` objects instead of `HttpException`s. A 413 from
     // `body-parser` must stay a 413: mapping it to 500 would break the
-    // guarantee that no client input can produce a server error (§6).
-    const status = clientErrorStatus(exception);
+    // guarantee that no client input can produce a server error.
+    const status = extractSafeClientErrorStatus(exception);
     if (status !== undefined) {
       const candidate = exception as HttpErrorLike;
       // Only trust the message when the library marked it as safe to expose.
