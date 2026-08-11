@@ -4,8 +4,6 @@ import { createTestApp } from '../../testing/create-test-app';
 import { setupSwagger } from '../../common/setup-swagger';
 import { AppModule } from '../../app.module';
 
-// Distinctive secret so its absence from /docs-json can be asserted
-// unambiguously: the secret must never leak into the API documentation.
 const SIGNER_SECRET = 'health-integration-test-secret-SENTINEL-32chars';
 
 describe('GET /health and Swagger documentation (app assembly)', () => {
