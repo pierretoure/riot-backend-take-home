@@ -111,7 +111,7 @@ src/
 │   └── json/
 │       ├── canonicalize.ts             RFC 8785 (tri récursif des clés)
 │       ├── canonicalize.test.ts
-│       ├── canonicalize.invariants.test.ts
+│       ├── canonicalize.property.test.ts
 │       └── json.types.ts               JsonValue, JsonObject
 ├── crypto/
 │   ├── ports/cipher.port.ts
@@ -120,7 +120,7 @@ src/
 │   │   ├── base64.cipher.test.ts
 │   │   └── cipher.contract.test.ts     suite partagée, jouée contre tous les adapters
 │   ├── crypto.service.ts
-│   ├── crypto.service.invariants.test.ts round-trip decrypt(encrypt(x)) === x
+│   ├── crypto.service.property.test.ts round-trip decrypt(encrypt(x)) === x
 │   ├── crypto.controller.ts
 │   ├── crypto.module.ts
 │   ├── dto/
@@ -135,7 +135,7 @@ src/
 │   │   ├── hmac-sha256.signer.test.ts
 │   │   └── signer.contract.test.ts     suite partagée, jouée contre tous les adapters
 │   ├── signature.service.ts
-│   ├── signature.service.invariants.test.ts
+│   ├── signature.service.property.test.ts
 │   ├── signature.controller.ts
 │   ├── signature.module.ts
 │   ├── dto/
