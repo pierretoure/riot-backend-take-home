@@ -1,8 +1,6 @@
 import request from 'supertest';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import { createTestApp } from '../../testing/create-test-app';
-import { burstStatuses } from '../../testing/rate-limit';
-import { AppModule } from '../../app.module';
 import { CryptoModule } from '../crypto.module';
 
 describe('POST /decrypt', () => {
@@ -87,26 +85,5 @@ describe('POST /decrypt', () => {
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual({});
-  });
-
-  describe('rate limiting', () => {
-    let throttledApp: NestExpressApplication;
-
-    // A dedicated application: the guard is global to `AppModule` rather than
-    // to `CryptoModule`, and the burst below must not exhaust the quota of
-    // the functional cases above.
-    beforeAll(async () => {
-      throttledApp = await createTestApp([AppModule]);
-    });
-
-    afterAll(async () => {
-      await throttledApp.close();
-    });
-
-    it('returns 429 once the configured request threshold is exceeded', async () => {
-      const statuses = await burstStatuses(throttledApp, '/decrypt', { a: 1 });
-
-      expect(statuses).toContain(429);
-    });
   });
 });

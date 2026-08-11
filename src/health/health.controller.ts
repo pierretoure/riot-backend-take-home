@@ -16,8 +16,7 @@ export class HealthController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Liveness probe',
-    description:
-      'Used by the Docker HEALTHCHECK and load balancers. Not rate limited.',
+    description: 'Used by the Docker HEALTHCHECK and load balancers.',
   })
   @ApiResponse({
     status: 200,
