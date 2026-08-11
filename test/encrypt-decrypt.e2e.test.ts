@@ -4,12 +4,12 @@ import { createTestApp } from '../src/testing/create-test-app';
 import { AppModule } from '../src/app.module';
 
 /**
- * End-to-end coherence requirement (cahier des charges §3.4, §10, §12):
- * `POST /encrypt` followed by `POST /decrypt` must restitute the original
- * payload, types included. Every assertion here feeds the output of one HTTP
- * call into the next — no intermediate ciphertext is ever hardcoded, so a
- * broken `/encrypt` cannot be masked by a `/decrypt` that merely happens to
- * agree with a value copy-pasted into the test.
+ * End-to-end coherence requirement: `POST /encrypt` followed by
+ * `POST /decrypt` must restitute the original payload, types included.
+ * Every assertion here feeds the output of one HTTP call into the next — no
+ * intermediate ciphertext is ever hardcoded, so a broken `/encrypt` cannot
+ * be masked by a `/decrypt` that merely happens to agree with a value
+ * copy-pasted into the test.
  */
 describe('POST /encrypt -> POST /decrypt (e2e)', () => {
   let app: NestExpressApplication;

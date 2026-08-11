@@ -6,7 +6,7 @@ import { SignatureModule } from '../signature.module';
 
 const HMAC_SECRET = 'a'.repeat(32);
 
-describe('/sign and /verify error handling (cahier des charges §6)', () => {
+describe('/sign and /verify error handling', () => {
   let app: NestExpressApplication;
 
   beforeAll(async () => {

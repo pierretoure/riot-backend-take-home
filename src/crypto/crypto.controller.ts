@@ -5,9 +5,9 @@ import { JsonPayloadPipe } from '../common/pipes/json-payload.pipe';
 import { CryptoService } from './crypto.service';
 
 /**
- * `/encrypt` and `/decrypt` (cahier des charges §4.1/§4.2). Contains no
- * business logic: request shape is enforced by `JsonPayloadPipe`, and the
- * actual encryption/decryption is delegated to `CryptoService`.
+ * `/encrypt` and `/decrypt`. Contains no business logic: request shape is
+ * enforced by `JsonPayloadPipe`, and the actual encryption/decryption is
+ * delegated to `CryptoService`.
  */
 @ApiTags('crypto')
 @Controller()
@@ -19,7 +19,7 @@ export class CryptoController {
   @ApiOperation({
     summary: 'Encrypt every depth-1 property of an arbitrary JSON payload',
     description:
-      'Each top-level property is encoded as base64(JSON.stringify(value)) (cahier des charges §4.1).',
+      'Each top-level property is encoded as base64(JSON.stringify(value)).',
   })
   @ApiBody({
     description: 'Any JSON object.',
@@ -64,7 +64,7 @@ export class CryptoController {
   @ApiOperation({
     summary: 'Decrypt every depth-1 property previously produced by /encrypt',
     description:
-      'Properties detected as encrypted are decoded and reparsed; any other property is left strictly unchanged (cahier des charges §4.2).',
+      'Properties detected as encrypted are decoded and reparsed; any other property is left strictly unchanged.',
   })
   @ApiBody({
     description: 'Any JSON object, typically the output of /encrypt.',

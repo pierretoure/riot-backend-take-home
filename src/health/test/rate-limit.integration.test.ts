@@ -8,11 +8,11 @@ import { AppModule } from '../../app.module';
 const HMAC_SECRET = 'rate-limit-integration-test-secret-32-chars-min';
 
 /**
- * Cahier des charges §8: rate limiting via `@nestjs/throttler`, and
- * `GET /health` explicitly exempted from it. `AppModule`'s throttler is
- * configured for 20 requests / 10s (see `src/app.module.ts`).
+ * Rate limiting via `@nestjs/throttler`, with `GET /health` explicitly
+ * exempted from it. `AppModule`'s throttler is configured for 20 requests /
+ * 10s (see `src/app.module.ts`).
  */
-describe('Rate limiting (cahier des charges §8)', () => {
+describe('Rate limiting', () => {
   let app: NestExpressApplication;
 
   beforeAll(async () => {

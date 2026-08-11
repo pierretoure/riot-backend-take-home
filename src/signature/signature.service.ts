@@ -5,8 +5,8 @@ import { SIGNER, type Signer } from './ports/signer.port';
 
 /**
  * Domain service for the signature feature. Depends only on the `Signer`
- * port (§3.2) and on the shared `canonicalize` helper — it has no knowledge
- * of HMAC, `node:crypto`, or NestJS HTTP concerns.
+ * port and on the shared `canonicalize` helper — it has no knowledge of
+ * HMAC, `node:crypto`, or NestJS HTTP concerns.
  */
 @Injectable()
 export class SignatureService {

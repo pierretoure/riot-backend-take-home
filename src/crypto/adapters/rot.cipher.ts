@@ -1,8 +1,8 @@
 import type { Cipher } from '../ports/cipher.port';
 
 /**
- * Character-rotation `Cipher` adapter (cahier des charges §3.3): a second,
- * trivial implementation of the `Cipher` port, not wired into
+ * Character-rotation `Cipher` adapter: a second, trivial implementation of
+ * the `Cipher` port, not wired into
  * `crypto.module.ts`. Its sole purpose is to prove that swapping the
  * encryption algorithm truly requires no change outside
  * `crypto.module.ts` (see the shared contract test in
@@ -21,10 +21,9 @@ export class RotCipher implements Cipher {
   // Marker prefix identifying ciphertext produced by this adapter, since a
   // character-rotation cipher has no structural signature of its own to
   // distinguish ciphertext from plaintext (unlike Base64's alphabet/padding
-  // constraints). This mirrors the "enveloppe" alternative mentioned in
-  // cahier des charges §4.2, kept out of `Base64Cipher` to stay conformant
-  // with the subject, but perfectly legitimate for this demonstration-only
-  // adapter.
+  // constraints). This "envelope" approach is kept out of `Base64Cipher` to
+  // stay conformant with the subject, but is perfectly legitimate for this
+  // demonstration-only adapter.
   private static readonly MARKER = 'rot13:';
 
   private rotate(input: string, direction: 1 | -1): string {
@@ -32,7 +31,6 @@ export class RotCipher implements Cipher {
     for (const char of input) {
       const code = char.codePointAt(0) ?? 0;
       if (code < RotCipher.RANGE_START || code > 0x7e) {
-        // Outside the rotated range: left as-is.
         result += char;
         continue;
       }

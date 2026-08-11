@@ -6,8 +6,8 @@ import {
 import type { JsonValue } from '../../common/json/json.types';
 
 /**
- * Request body of `POST /verify` (cahier des charges §4.4): both
- * `signature` and `data` are mandatory.
+ * Request body of `POST /verify`: both `signature` and `data` are
+ * mandatory.
  *
  * Deliberately declared as a plain `interface`, not a `class`: NestJS's
  * global `ValidationPipe` (whitelist + forbidNonWhitelisted + transform,
@@ -31,9 +31,9 @@ export interface VerifyRequestDto {
 /**
  * Parameter-level pipe validating and narrowing an arbitrary request body
  * into a `VerifyRequestDto`, throwing `400 Bad Request` (via the global
- * exception filter, §6) on any violation. Mirrors `JsonPayloadPipe`'s
- * idiom (`@Body(VerifyRequestPipe)`) so both domains share the same
- * validation convention (cahier des charges, app-assembly step).
+ * exception filter) on any violation. Mirrors `JsonPayloadPipe`'s idiom
+ * (`@Body(VerifyRequestPipe)`) so both domains share the same validation
+ * convention.
  */
 @Injectable()
 export class VerifyRequestPipe implements PipeTransform<

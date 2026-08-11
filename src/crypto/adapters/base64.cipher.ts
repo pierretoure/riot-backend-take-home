@@ -1,7 +1,7 @@
 import type { Cipher } from '../ports/cipher.port';
 
 /**
- * Base64 `Cipher` adapter (cahier des charges §4.1/§4.2).
+ * Base64 `Cipher` adapter.
  *
  * `encrypt`/`decrypt` operate on plain strings only: `CryptoService` is
  * responsible for `JSON.stringify`/`JSON.parse`, so that the encoding step
@@ -18,8 +18,7 @@ export class Base64Cipher implements Cipher {
 
   /**
    * Detects whether `value` plausibly is Base64 ciphertext produced by
-   * `encrypt`, applying the four criteria from cahier des charges §4.2, all
-   * required, in order:
+   * `encrypt`, applying four criteria, all required, in order:
    *
    * 1. `value` matches the Base64 alphabet and its length is a multiple of 4.
    * 2. Round-trip: re-encoding the decoded bytes yields `value` back exactly

@@ -7,9 +7,9 @@ import { HealthModule } from './health/health.module';
 import { SignatureModule } from './signature/signature.module';
 
 /**
- * Root module (cahier des charges §3.4). `ThrottlerGuard` is registered
- * globally via `APP_GUARD` so every route is rate-limited by default;
- * `HealthController` opts out individually with `@SkipThrottle()` (§8).
+ * Root module. `ThrottlerGuard` is registered globally via `APP_GUARD` so
+ * every route is rate-limited by default; `HealthController` opts out
+ * individually with `@SkipThrottle()`.
  *
  * Rate limiting is deliberately generous rather than tuned for production
  * traffic: 20 requests per 10 seconds per client IP, which is enough to

@@ -7,7 +7,7 @@ import type { Signer } from '../ports/signer.port';
  * Minimal alternative `Signer` implementation. It exists solely to prove
  * that the `Signer` port abstraction is real — that the domain can be
  * exercised against more than one algorithm — and is never wired into the
- * application (cahier des charges §3.3, requirement #1).
+ * application.
  */
 class UppercaseHexSigner implements Signer {
   sign(payload: string): string {

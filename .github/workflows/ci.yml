@@ -5,21 +5,12 @@ on:
   pull_request:
 
 env:
-  # Test-only fixture, not a real secret. Provided at job level (rather than
-  # relying solely on src/testing/jest-setup-env.ts) so that CI mirrors a
-  # real deployment environment: AppModule validates HMAC_SECRET at
-  # ConfigModule.forRoot() time regardless of how the process is started
-  # (jest, `nest start`, a future smoke-test step, ...). Keeping it here
-  # also makes the requirement "the app refuses to start without
-  # HMAC_SECRET" explicit and visible in the pipeline definition instead of
-  # implicit in a test helper.
+  # HMAC_SECRET is required so we use a mocked one to ensure CI works as expected.
   HMAC_SECRET: 'ci-hmac-secret-fixture-please-do-not-use-in-prod-32chars'
 
-# The workflow only reads the repository; nothing here publishes or deploys.
 permissions:
   contents: read
 
-# A new push supersedes the previous run on the same ref.
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
@@ -63,15 +54,14 @@ jobs:
       - name: Build
         run: pnpm build
 
-      # Reported for information only (cahier des charges §11): no coverage
-      # threshold gates the build. This is the one step allowed to fail
-      # without failing the job — every step above is a hard gate.
+      # Informational only: no coverage threshold gates the build, this is
+      # the one step allowed to fail without failing the job.
       - name: Coverage report
         run: pnpm test:cov
         continue-on-error: true
 
-      # Also informational: a new advisory published upstream should surface
-      # here, but must not turn a green commit red without any code change.
+      # Informational only: a new advisory published upstream must not turn
+      # a green commit red without any code change.
       - name: Dependency audit
         run: pnpm audit --prod
         continue-on-error: true

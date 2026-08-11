@@ -24,8 +24,7 @@ const jsonValueArbitrary: fc.Arbitrary<JsonValue> = fc.letrec<{
       .double({ noNaN: true, noDefaultInfinity: true })
       .filter((n) => !Object.is(n, -0)),
     fc.integer(),
-    // Excludes strings that happen to be valid Base64 + UTF-8 + JSON
-    // (cahier des charges §4.2's documented detection ambiguity): such a
+    // Excludes strings that happen to be valid Base64 + UTF-8 + JSON: such a
     // plaintext string would be wrongly decoded by `decryptPayload`, which
     // is a known limitation of the heuristic, not a bug in the round-trip
     // property under test here.

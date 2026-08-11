@@ -5,7 +5,7 @@ import { CryptoModule } from '../crypto.module';
 
 /**
  * `POST /decrypt` integration tests: reproduces the literal examples from
- * subject.md/cahier des charges §4.2 against a real Nest application.
+ * subject.md against a real Nest application.
  */
 describe('POST /decrypt', () => {
   let app: NestExpressApplication;

@@ -6,12 +6,11 @@ import { shuffleKeysDeep } from '../src/testing/shuffle-keys-deep';
 import type { JsonObject } from '../src/common/json/json.types';
 
 /**
- * End-to-end coherence requirement (cahier des charges §3.4, §10, §12):
- * `POST /sign` followed by `POST /verify` with the signature it produced
- * must return `204`, independently of property order at every nesting
- * level, and must reject a payload altered after signing. The signature
- * used by every `/verify` call below always comes from a prior `/sign`
- * response — never hardcoded.
+ * End-to-end coherence requirement: `POST /sign` followed by
+ * `POST /verify` with the signature it produced must return `204`,
+ * independently of property order at every nesting level, and must reject a
+ * payload altered after signing. The signature used by every `/verify` call
+ * below always comes from a prior `/sign` response — never hardcoded.
  */
 describe('POST /sign -> POST /verify (e2e)', () => {
   let app: NestExpressApplication;

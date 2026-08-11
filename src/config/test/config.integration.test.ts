@@ -3,11 +3,10 @@ import { ConfigModule } from '@nestjs/config';
 import { validateEnv } from '../env.schema';
 
 /**
- * Integration-level coverage of the fail-fast requirement (cahier des
- * charges §5/§12: "L'application refuse de démarrer sans HMAC_SECRET
- * valide"). `env.schema.test.ts` already unit-tests `validateEnv` in
- * isolation; this test instead exercises the real Nest wiring path used by
- * `AppConfigModule`/`AppModule`.
+ * Integration-level coverage of the fail-fast requirement: the application
+ * must refuse to start without a valid `HMAC_SECRET`. `env.schema.test.ts`
+ * already unit-tests `validateEnv` in isolation; this test instead exercises
+ * the real Nest wiring path used by `AppConfigModule`/`AppModule`.
  *
  * `ConfigModule.forRoot` is itself an `async` static method: when
  * `validate` throws, it does *not* throw synchronously — it returns a

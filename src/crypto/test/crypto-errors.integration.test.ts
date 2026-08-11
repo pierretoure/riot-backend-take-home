@@ -4,10 +4,6 @@ import { createTestApp } from '../../testing/create-test-app';
 import { CryptoModule } from '../crypto.module';
 import { MAX_VALUE_DEPTH } from '../crypto.service';
 
-/**
- * Covers the subset of the cahier des charges §6 error table applicable to
- * `/encrypt` and `/decrypt`.
- */
 describe('crypto errors (/encrypt, /decrypt)', () => {
   let app: NestExpressApplication;
 

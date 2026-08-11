@@ -1,7 +1,7 @@
 /**
- * Port for a pluggable signature algorithm (cahier des charges §3.2). The
- * domain (`SignatureService`) only ever depends on this interface; it has
- * no knowledge of HMAC or `node:crypto`.
+ * Port for a pluggable signature algorithm. The domain (`SignatureService`)
+ * only ever depends on this interface; it has no knowledge of HMAC or
+ * `node:crypto`.
  */
 export interface Signer {
   /** Computes the signature of an already-serialized payload string. */
@@ -19,6 +19,6 @@ export interface Signer {
 /**
  * DI token used to bind a concrete `Signer` implementation. Swapping the
  * signing algorithm requires changing only the provider bound to this token
- * in `signature.module.ts` (cahier des charges §3.3).
+ * in `signature.module.ts`.
  */
 export const SIGNER = Symbol('SIGNER');

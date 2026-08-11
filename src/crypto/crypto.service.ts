@@ -4,17 +4,16 @@ import { CIPHER, type Cipher } from './ports/cipher.port';
 
 /**
  * Maximum number of top-level (depth 1) properties accepted by
- * `encryptPayload`/`decryptPayload` (cahier des charges §8: "garde de
- * profondeur/taille"). The 100kb global body size limit already bounds
- * total payload bytes; this bounds *property count* specifically, guarding
- * against a payload that is small in bytes but pathologically wide (e.g.
- * tens of thousands of single-character keys), which would otherwise force
- * an equally large amount of per-property work.
+ * `encryptPayload`/`decryptPayload`. The 100kb global body size limit
+ * already bounds total payload bytes; this bounds *property count*
+ * specifically, guarding against a payload that is small in bytes but
+ * pathologically wide (e.g. tens of thousands of single-character keys),
+ * which would otherwise force an equally large amount of per-property work.
  */
 export const MAX_TOP_LEVEL_PROPERTIES = 1000;
 
 /**
- * Maximum nesting depth accepted for any single property value (§8). A
+ * Maximum nesting depth accepted for any single property value. A
  * primitive value has depth 1; each level of object/array nesting adds 1.
  *
  * This exists because `JSON.stringify` (used by `encryptPayload`) is
@@ -86,9 +85,9 @@ function assertSafeDepth(value: JsonValue, propertyName: string): void {
 }
 
 /**
- * Domain service orchestrating `/encrypt` and `/decrypt` (cahier des
- * charges §4.1/§4.2). Depends only on the `Cipher` port: swapping
- * `Base64Cipher` for another adapter requires no change here.
+ * Domain service orchestrating `/encrypt` and `/decrypt`. Depends only on
+ * the `Cipher` port: swapping `Base64Cipher` for another adapter requires no
+ * change here.
  */
 @Injectable()
 export class CryptoService {

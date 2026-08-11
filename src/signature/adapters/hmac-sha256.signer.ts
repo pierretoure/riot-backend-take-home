@@ -5,10 +5,10 @@ import type { Signer } from '../ports/signer.port';
 
 /**
  * HMAC-SHA256 `Signer`, hex-encoded (lowercase), backed exclusively by
- * `node:crypto` (cahier des charges §2/§8). The secret has no default: it is
- * always read from `ConfigService`, which itself only exposes it once the
- * env schema validation (`src/config/env.schema.ts`) has confirmed a valid
- * `HMAC_SECRET` is present (fail-fast at startup, §5).
+ * `node:crypto`. The secret has no default: it is always read from
+ * `ConfigService`, which itself only exposes it once the env schema
+ * validation (`src/config/env.schema.ts`) has confirmed a valid
+ * `HMAC_SECRET` is present (fail-fast at startup).
  */
 @Injectable()
 export class HmacSha256Signer implements Signer {

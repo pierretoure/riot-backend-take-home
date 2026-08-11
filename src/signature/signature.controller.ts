@@ -17,9 +17,9 @@ import {
 import { SignatureService } from './signature.service';
 
 /**
- * `/sign` and `/verify` (cahier des charges §4.3/§4.4). Contains no business
- * logic: request shape is enforced by `JsonPayloadPipe`/`VerifyRequestPipe`,
- * and the actual signing/verification is delegated to `SignatureService`.
+ * `/sign` and `/verify`. Contains no business logic: request shape is
+ * enforced by `JsonPayloadPipe`/`VerifyRequestPipe`, and the actual
+ * signing/verification is delegated to `SignatureService`.
  */
 @ApiTags('signature')
 @Controller()
@@ -31,7 +31,7 @@ export class SignatureController {
   @ApiOperation({
     summary: 'Sign an arbitrary JSON payload with HMAC-SHA256',
     description:
-      'The signature is computed over the canonicalized payload, independent of property order (cahier des charges §4.3).',
+      'The signature is computed over the canonicalized payload, independent of property order.',
   })
   @ApiBody({
     description: 'Any JSON object.',
@@ -66,7 +66,7 @@ export class SignatureController {
     summary:
       'Verify a payload against a previously computed HMAC-SHA256 signature',
     description:
-      'Recomputes the HMAC over the canonicalized `data` and compares it in constant time against `signature` (cahier des charges §4.4).',
+      'Recomputes the HMAC over the canonicalized `data` and compares it in constant time against `signature`.',
   })
   @ApiBody({
     description: 'The signature to verify, and the data it was computed over.',

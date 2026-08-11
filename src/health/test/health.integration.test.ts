@@ -5,7 +5,7 @@ import { setupSwagger } from '../../common/setup-swagger';
 import { AppModule } from '../../app.module';
 
 // Distinctive secret so its absence from /docs-json can be asserted
-// unambiguously (cahier des charges §7: "aucune trace du secret").
+// unambiguously: the secret must never leak into the API documentation.
 const HMAC_SECRET = 'health-integration-test-secret-SENTINEL-32chars';
 
 describe('GET /health and Swagger documentation (app assembly)', () => {

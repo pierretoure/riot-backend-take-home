@@ -30,7 +30,7 @@ describe('POST /sign (integration)', () => {
     await app.close();
   });
 
-  it('returns exclusively a signature property (cahier des charges §4.3)', async () => {
+  it('returns exclusively a signature property', async () => {
     const response = await request(app.getHttpServer())
       .post('/sign')
       .send({ message: 'Hello World', timestamp: 1616161616 });

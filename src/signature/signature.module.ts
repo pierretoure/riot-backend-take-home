@@ -7,7 +7,7 @@ import { SignatureService } from './signature.service';
 
 /**
  * Wires the signature domain. `SIGNER` is the single provider binding to
- * change in order to swap the signing algorithm (cahier des charges §3.3).
+ * change in order to swap the signing algorithm.
  *
  * `ConfigModule` is imported explicitly so this module is self-sufficient
  * in isolation (e.g. in integration tests that mount only `SignatureModule`

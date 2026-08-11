@@ -10,7 +10,7 @@ import { applyGlobalConfig } from '../common/apply-global-config';
  *
  * Excluded from the production build (`tsconfig.build.json`); it exists
  * solely to be shared between `src/<domain>/test/*.integration.test.ts` and
- * `test/*.e2e.test.ts`, per cahier des charges §3.4.
+ * `test/*.e2e.test.ts`.
  *
  * @param imports Modules to compile the test application from.
  * @param beforeInit Optional hook run after `applyGlobalConfig` but before

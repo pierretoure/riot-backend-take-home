@@ -23,7 +23,7 @@ describe('Base64Cipher', () => {
   });
 
   describe('looksEncrypted', () => {
-    // Literal examples from cahier des charges §4.2 / subject.md.
+    // Literal examples from subject.md.
     it('rejects "1998-11-19" (criterion 1: not Base64 alphabet)', () => {
       expect(cipher.looksEncrypted('1998-11-19')).toBe(false);
     });

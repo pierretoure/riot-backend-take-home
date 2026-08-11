@@ -7,8 +7,8 @@ export interface HealthResponseDto {
 }
 
 /**
- * `GET /health` (cahier des charges §8): a liveness probe used by the
- * Docker `HEALTHCHECK` and load balancers. Exempted from rate limiting
+ * `GET /health`: a liveness probe used by the Docker `HEALTHCHECK` and load
+ * balancers. Exempted from rate limiting
  * (`@SkipThrottle()`) — an orchestrator polling this endpoint frequently
  * must never itself be throttled — and from Swagger documentation, since it
  * is an infrastructure concern rather than part of the public API surface

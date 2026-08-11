@@ -2,8 +2,8 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 
 /**
- * Mounts the OpenAPI document (cahier des charges §7): an interactive UI on
- * `/docs` and the raw JSON on `/docs-json`. Built from decorators on the
+ * Mounts the OpenAPI document: an interactive UI on `/docs` and the raw
+ * JSON on `/docs-json`. Built from decorators on the
  * controllers rather than a hand-maintained spec, so it cannot drift from
  * the actual routes.
  *
