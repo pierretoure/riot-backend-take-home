@@ -7,11 +7,6 @@ import { AppModule } from '../../app.module';
 // cross-test coupling through `process.env`.
 const HMAC_SECRET = 'rate-limit-integration-test-secret-32-chars-min';
 
-/**
- * Rate limiting via `@nestjs/throttler`, with `GET /health` explicitly
- * exempted from it. `AppModule`'s throttler is configured for 20 requests /
- * 10s (see `src/app.module.ts`).
- */
 describe('Rate limiting', () => {
   let app: NestExpressApplication;
 

@@ -7,7 +7,6 @@ import {
 import { of } from 'rxjs';
 import { LoggingInterceptor } from './logging.interceptor';
 
-/** Minimal request shape covering exactly what the interceptor reads. */
 interface FakeRequest {
   headers: Record<string, string | string[] | undefined>;
   method: string;

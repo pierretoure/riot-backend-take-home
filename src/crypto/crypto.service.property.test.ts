@@ -3,12 +3,6 @@ import { Base64Cipher } from './adapters/base64.cipher';
 import { CryptoService } from './crypto.service';
 import type { JsonObject, JsonValue } from '../common/json/json.types';
 
-/**
- * Arbitrary producing depth-1 JSON objects: every property value can itself
- * be an arbitrary JSON value (unicode strings, negative/floating numbers,
- * `null`, booleans, arrays, nested objects) — types the round-trip must
- * preserve exactly.
- */
 const jsonValueArbitrary: fc.Arbitrary<JsonValue> = fc.letrec<{
   value: JsonValue;
 }>((tie) => ({

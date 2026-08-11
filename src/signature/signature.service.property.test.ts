@@ -5,11 +5,6 @@ import { SignatureService } from './signature.service';
 import { shuffleKeysDeep } from '../testing/shuffle-keys-deep';
 import type { JsonObject, JsonValue } from '../common/json/json.types';
 
-/**
- * Arbitrary producing varied JSON values, mirroring the generator used for
- * `canonicalize` (unicode strings, empty strings, negative/float numbers,
- * `null`, booleans, arrays, nested objects).
- */
 const jsonValueArbitrary: fc.Arbitrary<JsonValue> = fc.letrec<{
   value: JsonValue;
 }>((tie) => ({

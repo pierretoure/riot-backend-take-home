@@ -16,11 +16,6 @@ import {
 } from './dto/verify-request.dto';
 import { SignatureService } from './signature.service';
 
-/**
- * `/sign` and `/verify`. Contains no business logic: request shape is
- * enforced by `JsonPayloadPipe`/`VerifyRequestPipe`, and the actual
- * signing/verification is delegated to `SignatureService`.
- */
 @ApiTags('signature')
 @Controller()
 export class SignatureController {

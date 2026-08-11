@@ -84,11 +84,6 @@ function assertSafeDepth(value: JsonValue, propertyName: string): void {
   }
 }
 
-/**
- * Domain service orchestrating `/encrypt` and `/decrypt`. Depends only on
- * the `Cipher` port: swapping `Base64Cipher` for another adapter requires no
- * change here.
- */
 @Injectable()
 export class CryptoService {
   constructor(@Inject(CIPHER) private readonly cipher: Cipher) {}

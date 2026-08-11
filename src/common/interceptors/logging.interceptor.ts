@@ -9,7 +9,6 @@ import {
 import type { Request, Response } from 'express';
 import type { Observable } from 'rxjs';
 
-/** Request, augmented with the request id resolved by `LoggingInterceptor`. */
 export interface RequestWithId extends Request {
   requestId?: string;
 }

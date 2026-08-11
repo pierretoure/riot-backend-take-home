@@ -1,7 +1,6 @@
 import type { LogLevel } from '@nestjs/common';
 import { z } from 'zod';
 
-/** NestJS's own log levels, reused as-is for the `LOG_LEVEL` env var. */
 const LOG_LEVELS = [
   'fatal',
   'error',
