@@ -231,7 +231,7 @@ Variables d'environnement, chargées via `@nestjs/config` (module global) et val
 | `HMAC_SECRET` | oui | — | chaîne, ≥ 32 caractères |
 | `PORT` | non | `3000` | entier 1–65535 |
 | `NODE_ENV` | non | `development` | `development` \| `test` \| `production` |
-| `LOG_LEVEL` | non | `info` | niveau de log valide |
+| `LOG_LEVEL` | non | `log` | niveau NestJS : `fatal`, `error`, `warn`, `log`, `debug`, `verbose` |
 
 - **Fail-fast** : si `HMAC_SECRET` est absent ou trop court, l'application **refuse de démarrer** avec un message explicite. Aucune valeur par défaut de secret n'existe dans le code.
 - `.env.example` est versionné ; `.env` est ignoré par git.

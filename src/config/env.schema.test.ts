@@ -43,7 +43,7 @@ describe('validateEnv', () => {
 
     expect(result.PORT).toBe(3000);
     expect(result.NODE_ENV).toBe('development');
-    expect(result.LOG_LEVEL).toBe('info');
+    expect(result.LOG_LEVEL).toBe('log');
   });
 
   describe('HMAC_SECRET', () => {

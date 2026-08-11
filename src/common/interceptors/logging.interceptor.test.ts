@@ -5,7 +5,7 @@ import {
   type ExecutionContext,
 } from '@nestjs/common';
 import { of } from 'rxjs';
-import { LoggingInterceptor, mapToNestLogLevel } from './logging.interceptor';
+import { LoggingInterceptor } from './logging.interceptor';
 
 /** Minimal request shape covering exactly what the interceptor reads. */
 interface FakeRequest {
@@ -46,22 +46,6 @@ function createContext(
 function createHandler(): CallHandler {
   return { handle: () => of('ok') };
 }
-
-describe('mapToNestLogLevel', () => {
-  it.each([
-    ['fatal', 'fatal'],
-    ['error', 'error'],
-    ['warn', 'warn'],
-    ['info', 'log'],
-    ['debug', 'debug'],
-    ['trace', 'verbose'],
-  ] as const)(
-    'maps config level "%s" to Nest level "%s"',
-    (input, expected) => {
-      expect(mapToNestLogLevel(input)).toBe(expected);
-    },
-  );
-});
 
 type LoggerSpy = jest.SpyInstance<void, [message: unknown, ...rest: unknown[]]>;
 

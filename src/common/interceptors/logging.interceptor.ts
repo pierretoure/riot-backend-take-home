@@ -4,41 +4,10 @@ import {
   Logger,
   type CallHandler,
   type ExecutionContext,
-  type LogLevel,
   type NestInterceptor,
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import type { Observable } from 'rxjs';
-
-/**
- * Log levels exposed by the application's public configuration (see
- * `src/config/env.schema.ts`), following the pino/syslog-style scale.
- */
-export type ConfigLogLevel =
-  'fatal' | 'error' | 'warn' | 'info' | 'debug' | 'trace';
-
-/**
- * Translates the application's public `LOG_LEVEL` scale into the level
- * names understood by Nest's built-in `Logger`. The config scale is kept
- * untouched (it is the application's public contract, see §5/§9 of the
- * cahier des charges) — this is purely an internal mapping.
- */
-export function mapToNestLogLevel(level: ConfigLogLevel): LogLevel {
-  switch (level) {
-    case 'fatal':
-      return 'fatal';
-    case 'error':
-      return 'error';
-    case 'warn':
-      return 'warn';
-    case 'info':
-      return 'log';
-    case 'debug':
-      return 'debug';
-    case 'trace':
-      return 'verbose';
-  }
-}
 
 /** Request, augmented with the request id resolved by `LoggingInterceptor`. */
 export interface RequestWithId extends Request {
@@ -122,11 +91,11 @@ export class LoggingInterceptor implements NestInterceptor {
 
   private severityFor(statusCode: number): 'log' | 'warn' | 'error' {
     if (statusCode >= 500) {
-      return mapToNestLogLevel('error') as 'error';
+      return 'error';
     }
     if (statusCode >= 400) {
-      return mapToNestLogLevel('warn') as 'warn';
+      return 'warn';
     }
-    return mapToNestLogLevel('info') as 'log';
+    return 'log';
   }
 }

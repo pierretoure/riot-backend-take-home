@@ -39,7 +39,7 @@ Validated at startup by `src/config/env.schema.ts` (`zod`), via the `validate` o
 | `HMAC_SECRET` | yes | — | string, >= 32 characters |
 | `PORT` | no | `3000` | integer, 1–65535 |
 | `NODE_ENV` | no | `development` | one of `development`, `test`, `production` |
-| `LOG_LEVEL` | no | `info` | one of `fatal`, `error`, `warn`, `info`, `debug`, `trace` |
+| `LOG_LEVEL` | no | `log` | one of `fatal`, `error`, `warn`, `log`, `debug`, `verbose` |
 
 `.env.example` is versioned as a template; `.env` is git-ignored and must never be committed. There is no default secret anywhere in the code — a missing or too-short `HMAC_SECRET` is a fail-fast startup error, not a runtime `500`.
 

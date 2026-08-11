@@ -1,21 +1,17 @@
+import type { LogLevel } from '@nestjs/common';
 import { z } from 'zod';
 
-/**
- * Valid log levels, following the common pino/syslog-style scale used for
- * structured JSON logging (see cahier des charges §9).
- */
+/** NestJS's own log levels, reused as-is for the `LOG_LEVEL` env var. */
 const LOG_LEVELS = [
   'fatal',
   'error',
   'warn',
-  'info',
+  'log',
   'debug',
-  'trace',
-] as const;
+  'verbose',
+] as const satisfies readonly LogLevel[];
 
 /**
- * Environment schema, per cahier des charges §5.
- *
  * `HMAC_SECRET` has no default: an application without a valid secret must
  * fail to start rather than fall back to an insecure default.
  */
@@ -48,7 +44,7 @@ export const envSchema = z.object({
     .enum(LOG_LEVELS, {
       error: () => `LOG_LEVEL must be one of: ${LOG_LEVELS.join(', ')}`,
     })
-    .default('info'),
+    .default('log'),
 });
 
 export type Env = z.infer<typeof envSchema>;
