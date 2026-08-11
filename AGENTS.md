@@ -1,114 +1,93 @@
 # AGENTS.md
 
-Guidance for agents working in this repository.
+## Commands
 
-## Stack
+Use **pnpm**, never npm. If your shell defaults to an older Node, prefix with
+`source ~/.nvm/nvm.sh && nvm use &&`.
 
-NestJS 11 on Node >= 22 (see `.nvmrc`), TypeScript in `strict` mode with
-`noUncheckedIndexedAccess`, `noImplicitOverride` and `exactOptionalPropertyTypes`.
-Package manager: pnpm. No `any`, no `@ts-ignore`. Cryptography comes from
-`node:crypto` only — do not add a third-party crypto dependency.
+```bash
+pnpm install
+pnpm start:dev
 
-## Architecture
+pnpm test                                    # the three suites, in order
+pnpm test:unit
+pnpm test:integration
+pnpm test:e2e
+pnpm test:unit --testPathPatterns=canonicalize   # one file
+pnpm test:unit -t "never pollutes Object.prototype"   # one test by name
 
-Ports & adapters. Requests flow in one direction:
-
+pnpm lint          # reports only; lint:fix mutates
+pnpm typecheck
+pnpm build
 ```
-controller  ->  service (domain)  ->  port (interface)  ->  adapter (algorithm)
-```
 
-- **controller** — HTTP only: routing, status codes, Swagger. No business logic.
-- **service** — the domain. Depends on ports, never on a concrete algorithm.
-- **port** — an interface plus its DI token (`CIPHER`, `SIGNER`).
-- **adapter** — one concrete implementation of a port.
+**YOU MUST run `pnpm lint && pnpm typecheck && pnpm test` before considering a
+task finished.** No git hook enforces this locally — only CI, after you push.
 
-A module binds a port to an adapter, and that binding is the only place an
-algorithm is named:
+Do not write `pnpm test:unit -- --testPathPatterns=x`: the `--` makes Jest read
+the flag as a literal path pattern, and the run dies with a misleading
+`No tests found`.
+
+## Environment
+
+`HMAC_SECRET` (>= 32 characters) must be set or the app refuses to start — copy
+`.env.example` to `.env`. Never commit `.env`, and never let the secret reach a
+log, an error body, or the OpenAPI document.
+
+## Tests
+
+Every change ships with tests. Three Jest projects, three globs — a file in the
+wrong place is silently never run:
+
+| Level       | Location                                        | Scope                                                    |
+| ----------- | ----------------------------------------------- | -------------------------------------------------------- |
+| Unit        | `src/**/*.test.ts`, next to the file under test | One unit, dependencies faked                             |
+| Integration | `src/<domain>/test/*.integration.test.ts`       | Real Nest app via `createTestApp`, one domain, real HTTP |
+| E2E         | `test/*.e2e.test.ts`                            | Full app, endpoints chained end to end                   |
+
+- Unit and integration are required. Add an e2e test only when the behaviour
+  spans several endpoints; it must chain real calls and never hardcode a value
+  produced by a previous one.
+- Write the test first and watch it fail for the right reason — the feature
+  missing, not a typo or a bad import.
+- **Never weaken a test or a lint rule to get to green.**
+- Adapters are covered by `*.contract.test.ts`, run with `describe.each`
+  against every implementation of the port.
+- Property-based tests pin the fast-check seed so runs reproduce.
+
+## Design decisions
+
+Ports & adapters. A module binding is the only place an algorithm is named:
 
 ```ts
 { provide: CIPHER, useClass: Base64Cipher }
 ```
 
-Swapping an algorithm must require changing that single line and nothing else.
-If a change forces you to touch a service or a controller to swap an
-implementation, the abstraction is wrong — fix the abstraction.
+Swapping an algorithm must change that line and nothing else. If it forces you
+to touch a service or a controller, the abstraction is wrong — fix the
+abstraction, not the caller.
 
-```
-src/
-  common/        cross-cutting: filters, interceptors, pipes, json canonicalization
-  config/        env schema (zod), validated fail-fast at startup
-  crypto/        /encrypt, /decrypt      ports/ adapters/ dto/ test/
-  signature/     /sign, /verify          ports/ adapters/ dto/ test/
-  health/        /health
-  testing/       shared test helpers (excluded from the build)
-test/            e2e
-```
+`canonicalize` builds its `{...}` and `[...]` strings by hand instead of calling
+`JSON.stringify` on a re-sorted object. This is deliberate: engines enumerate
+array-index-like keys (`"1"`, `"10"`) in numeric order, which silently undoes
+the sort. Do not "simplify" it.
 
-## Tests
+Cryptography comes from `node:crypto` only — do not add a crypto dependency.
 
-Every change ships with tests. Three levels, three locations:
+## Git
 
-| Level | Location | Scope |
-|---|---|---|
-| Unit | `src/**/*.test.ts`, next to the file under test | One unit, dependencies faked |
-| Integration | `src/<domain>/test/*.integration.test.ts` | Real Nest app via `createTestApp`, one domain, real HTTP |
-| E2E | `test/*.e2e.test.ts` | Full app, endpoints chained end to end |
-
-Rules:
-
-- Unit and integration tests are required. Add an e2e test only when the
-  behaviour spans several endpoints — an e2e test chains real calls and must
-  never hardcode an intermediate value produced by a previous call.
-- Write the test first, watch it fail, and check it fails because the feature
-  is missing — not because of a typo or a bad import. Then implement.
-- Never weaken a test or a lint rule to get to green.
-- Adapters are covered by contract suites (`*.contract.test.ts`) run with
-  `describe.each` against every implementation of the port.
-- Property-based tests use a pinned fast-check seed so runs are reproducible.
-
-## Commands
-
-Prefix with `source ~/.nvm/nvm.sh && nvm use &&` if your shell defaults to an
-older Node.
-
-```bash
-pnpm install
-
-pnpm test              # the three suites, in order
-pnpm test:unit
-pnpm test:integration
-pnpm test:e2e
-pnpm test:cov          # coverage, reported but not gating
-pnpm test:watch
-
-pnpm lint              # reports; never mutates
-pnpm lint:fix
-pnpm typecheck
-pnpm build
-pnpm start:dev
-```
-
-Before committing: `pnpm lint && pnpm typecheck && pnpm test`.
-
-`HMAC_SECRET` (>= 32 characters) must be set or the app refuses to start. Copy
-`.env.example` to `.env`. Never commit `.env`, and never let the secret reach a
-log, an error body, or the OpenAPI document.
+Conventional Commits, in English. Work on a feature branch and open a PR.
+**Never push `main`.**
 
 ## Comments
 
-Comment only when the code cannot speak for itself. A comment is justified when
-the code is **complex**, **ambiguous**, or encodes a **product or design
-decision** — and then it explains *why*, not *what*.
-
-Delete anything that restates the declaration below it: no "port for the
-encryption algorithm" above a port, no "domain service" above a service, no
-"integration tests for POST /encrypt" above `describe('POST /encrypt')`. A short
-one-line summary is fine when a name is genuinely not self-explanatory.
-
-Do not cite internal documents (`docs/cahier-des-charges.md`, section numbers).
-State the rule itself, in plain English, so the comment stands on its own.
-
-Worth a comment:
+Comment only when the code is **complex**, **ambiguous**, or encodes a **product
+or design decision** — and then explain _why_, not _what_. Delete anything that
+restates the declaration below it: no "port for the encryption algorithm" above
+a port, no "domain service" above a service. A one-line summary is fine when a
+name is genuinely not self-explanatory. Do not cite internal documents or
+section numbers; state the rule so it stands on its own. Comments are in
+English.
 
 ```ts
 // Plain assignment hits the Object.prototype setter for the key "__proto__"
@@ -116,11 +95,7 @@ Worth a comment:
 Object.defineProperty(target, key, { value, enumerable: true, ... });
 ```
 
-Not worth a comment:
+## Reference
 
-```ts
-// Returns the user id.
-function getUserId() { ... }
-```
-
-Comments are written in English.
+- @docs/subject.md — the original assignment
+- @docs/cahier-des-charges.md — the full specification
