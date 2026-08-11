@@ -1,216 +1,96 @@
-# Riot Take-Home Technical Challenge
+# Riot Backend Take-Home
 
-## Overview
+HTTP API exposing four endpoints — `POST /encrypt`, `POST /decrypt`, `POST /sign`, `POST /verify` — for encrypting, decrypting, signing and verifying arbitrary JSON payloads, per the original challenge statement in [`docs/subject.md`](docs/subject.md). The full internal specification derived from it is [`docs/cahier-des-charges.md`](docs/cahier-des-charges.md).
 
-This challenge requires you to build an HTTP API with 4 endpoints that handle JSON payloads for encryption, decryption, signing, and verification operations.
+## Quick start
 
-## Requirements
+**Requirements**
 
-### 1. Encryption Endpoint (`/encrypt`)
+- Node 22 is required (`22.23.1`)
+- We recommand using`pnpm` as the package manager (`pnpm@10.12.1`).
+- The process needs a valid `SIGNER_SECRET` in `.env` to start (see [Environment variables](#environment-variables)).
 
-- **Method**: POST
-- **Input**: Any JSON payload
-- **Output**: JSON payload with all properties at depth 1 encrypted
-- **Encryption Algorithm**: Base64 (for simplicity)
+### Local
 
-**Example**:
+Install + define environment variables
 
-Input:
-
-```json
-{
-  "name": "John Doe",
-  "age": 30,
-  "contact": {
-    "email": "john@example.com",
-    "phone": "123-456-7890"
-  }
-}
+```bash
+nvm use
+pnpm install
+cp .env.example .env   # then edit SIGNER_SECRET (>= 32 characters)
 ```
 
-Output:
+Run locally
 
-```json
-{
-  "name": "some_encrypted_value",
-  "age": "some_encrypted_value",
-  "contact": "some_encrypted_value"
-}
+```bash
+pnpm start:dev
 ```
 
-### 2. Decryption Endpoint (`/decrypt`)
+The app listens on `http://localhost:3000` (you can update `PORT` in `.env`). Swagger UI is at `/docs`.
 
-- **Method**: POST
-- **Input**: Any JSON payload
-- **Output**: Original JSON payload with decrypted values. If some properties contain values which were not encrypted, they must remain unchanged. The `/decrypt` endpoint should be able to detect encrypted strings and decrypt, returning  the decrypted payload as JSON.
-- **Decryption Algorithm**: Base64 (for simplicity)
+### Docker
 
-**Examples**:
+Define environment variables
 
-Using the output from the `/encrypt` example as input should return the original payload:
-
-Input:
-
-```json
-{
-  "name": "some_encrypted_value",
-  "age": "some_encrypted_value",
-  "contact": "some_encrypted_value"
-}
+```bash
+cp .env.example .env   # then edit SIGNER_SECRET (>= 32 characters)
 ```
 
-Output:
+Build and run the image
 
-```json
-{
-  "name": "John Doe",
-  "age": 30,
-  "contact": {
-    "email": "john@example.com",
-    "phone": "123-456-7890"
-  }
-}
+```bash
+docker compose up --build
 ```
 
-Unencrypted properties must remain unchanged:
+## Environment variables
 
-Input:
+Any invalid value throws before the app starts listening.
 
-```json
-{
-  "name": "some_encrypted_value",
-  "age": "some_encrypted_value",
-  "contact": "some_encrypted_value",
-  "birth_date": "1998-11-19"
-}
+| Variable        | Required | Default       | Constraint                                                 |
+| --------------- | -------- | ------------- | ---------------------------------------------------------- |
+| `SIGNER_SECRET` | yes      | —             | string, >= 32 characters                                   |
+| `PORT`          | no       | `3000`        | integer, 1–65535                                           |
+| `NODE_ENV`      | no       | `development` | one of `development`, `test`, `production`                 |
+| `LOG_LEVEL`     | no       | `log`         | one of `fatal`, `error`, `warn`, `log`, `debug`, `verbose` |
+
+## Tests
+
+```bash
+pnpm test:unit          # unit tests, colocated *.test.ts files
+pnpm test:integration   # integration tests, src/<domain>/test/*.integration.test.ts
+pnpm test:e2e           # end-to-end tests, test/*.e2e.test.ts
+pnpm test               # runs the three suites above, in that order
+pnpm test:cov           # full suite with coverage report
 ```
 
-Output:
+You can also run `pnpm lint` (ESLint) and `pnpm typecheck` (`tsc --noEmit`).
 
-```json
-{
-  "name": "John Doe",
-  "age": 30,
-  "contact": {
-    "email": "john@example.com",
-    "phone": "123-456-7890"
-  },
-  "birth_date": "1998-11-19" // This remains unchanged
-}
+## Architecture
+
+```
+HTTP  ──►  Controllers (routes, HTTP codes, Swagger, request parsing)
+             │  no business logic
+             ▼
+           Services (domain logic: payload traversal, orchestration)
+             │  depend only on port interfaces
+             ▼
+           Adapters (concrete implementations: Base64, HMAC-SHA256)
 ```
 
-### 3. Signing Endpoint (`/sign`)
+## Known limitations
 
-- **Method**: POST
-- **Input**: Any JSON payload
-- **Output**: JSON payload with a unique "signature" property
-- **Signature Algorithm**: HMAC
-- **Important Note**: The signature must be computed based on the value of the JSON payload, not its string representation. This means the order of properties should not affect the signature.
+- **The Base64 detection heuristic is irreducibly ambiguous.** A plaintext string that happens to be simultaneously valid Base64, valid UTF-8, and valid JSON (e.g. the literal string `"MzA="` sent as a property value) is indistinguishable from genuine ciphertext and will be decoded by `/decrypt` regardless of intent. Nothing short of an explicit format marker (e.g. an `enc:v1:` envelope) can remove this ambiguity, and adding one to `Base64Cipher` would deviate from the subject's literal Base64 output format — so it is left as a documented trade-off rather than "fixed".
+- **No Unicode NFC normalization in `canonicalize`**, unlike strict RFC 8785 (JCS). Two different Unicode representations of the same perceived character (e.g. precomposed vs. combining-mark form) produce two different canonical strings and therefore two different signatures. Accepted here because the signer and verifier are the same service and there is no cross-system normalization boundary.
+- **A single HMAC secret, with no rotation mechanism.** Changing `SIGNER_SECRET` invalidates every signature issued under the previous one; there is no key ID or multi-key verification.
+- **Encryption only ever applies at depth 1**, per the subject: nested objects are encrypted as a single opaque Base64 blob, not recursively per leaf.
 
-**Examples**:
+## Possible extensions
 
-Basic example for an object with two properties:
+- HMAC key rotation (key IDs, multi-secret verification window).
+- Asymmetric signing (e.g. Ed25519) so verification doesn't require holding the signing secret.
+- Recursive encryption below depth 1, for nested objects that should not be encrypted as a single opaque blob.
 
-Input:
+## References
 
-```json
-{
-  "message": "Hello World",
-  "timestamp": 1616161616
-}
-```
-
-Output:
-
-```json
-{
-  "signature": "a1b2c3d4e5f6g7h8i9j0..."
-}
-```
-
-The order of properties must not change the signature, which means this example will generate the same signature:
-
-Input:
-
-```json
-{
-  "timestamp": 1616161616,
-  "message": "Hello World"
-}
-```
-
-Output:
-
-```json
-{
-  "signature": "a1b2c3d4e5f6g7h8i9j0..."
-}
-```
-
-### 4. Verification Endpoint (`/verify`)
-
-- **Method**: POST
-- **Input**: JSON payload with "signature" and "data" properties
-- **Output**:
-  - HTTP 204 (No Content) if signature is valid
-  - HTTP 400 (Bad Request) if signature is invalid
-
-**Examples**:
-
-Basic example of an object with two properties:
-
-Input:
-
-```json
-{
-  "signature": "a1b2c3d4e5f6g7h8i9j0...",
-  "data": {
-    "message": "Hello World",
-    "timestamp": 1616161616
-  }
-}
-```
-
-Output: 204 HTTP response
-
-The same input object with the order of properties changed must produce the same signature:
-
-Input:
-
-```json
-{
-  "signature": "a1b2c3d4e5f6g7h8i9j0...",
-  "data": {
-    "timestamp": 1616161616,
-    "message": "Hello World"
-  }
-}
-```
-
-Output: 204 HTTP response
-
-Example when using a tampered signature or payload:
-
-Input:
-
-```json
-{
-  "signature": "a1b2c3d4e5f6g7h8i9j0...",
-  "data": {
-    "timestamp": 1616161616,
-    "message": "Goodbye World"
-  }
-}
-```
-
-Output: 400 HTTP response
-
-## Design Considerations
-
-1. **Abstraction**: The encryption algorithm (Base64) in the `/encrypt` and `/decrypt` endpoints should be easily replaceable with another algorithm without significant changes to the codebase. Design your solution with appropriate abstractions. The same principle applies to the signature algorithm used in the `/sign` and `/verify` endpoints.
-
-2. **Consistency**: Ensure that `/encrypt` followed by `/decrypt` returns the original payload. Ensure that a payload signed with `/sign` can be successfully verified with `/verify`.
-
-## Submission
-
-Please submit your completed project by sending your GitHub repository link to the recruiter's email.
+- [`docs/cahier-des-charges.md`](docs/cahier-des-charges.md) — internal specification derived from the challenge.
+- [`docs/subject.md`](docs/subject.md) — original challenge statement.
