@@ -11,15 +11,15 @@ const LOG_LEVELS = [
 ] as const satisfies readonly LogLevel[];
 
 /**
- * `HMAC_SECRET` has no default: an application without a valid secret must
+ * `SIGNER_SECRET` has no default: an application without a valid secret must
  * fail to start rather than fall back to an insecure default.
  */
 export const envSchema = z.object({
-  HMAC_SECRET: z
+  SIGNER_SECRET: z
     .string({
-      error: () => 'HMAC_SECRET is required',
+      error: () => 'SIGNER_SECRET is required',
     })
-    .min(32, 'HMAC_SECRET must be at least 32 characters long'),
+    .min(32, 'SIGNER_SECRET must be at least 32 characters long'),
 
   // `process.env` values are always strings; coerce to number before
   // range-checking so that non-numeric input (e.g. "abc") is rejected
@@ -56,7 +56,7 @@ export type Env = z.infer<typeof envSchema>;
  * (fail-fast), instead of failing later on an incoming request.
  *
  * The resulting error message never includes the raw value of any
- * variable, so secrets (in particular `HMAC_SECRET`) cannot leak into logs
+ * variable, so secrets (in particular `SIGNER_SECRET`) cannot leak into logs
  * or crash output.
  */
 export function validateEnv(raw: Record<string, unknown>): Env {

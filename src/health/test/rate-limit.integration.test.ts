@@ -3,15 +3,15 @@ import type { NestExpressApplication } from '@nestjs/platform-express';
 import { createTestApp } from '../../testing/create-test-app';
 import { AppModule } from '../../app.module';
 
-// Distinct from other integration suites' HMAC_SECRET to avoid any
+// Distinct from other integration suites' SIGNER_SECRET to avoid any
 // cross-test coupling through `process.env`.
-const HMAC_SECRET = 'rate-limit-integration-test-secret-32-chars-min';
+const SIGNER_SECRET = 'rate-limit-integration-test-secret-32-chars-min';
 
 describe('Rate limiting', () => {
   let app: NestExpressApplication;
 
   beforeAll(async () => {
-    process.env.HMAC_SECRET = HMAC_SECRET;
+    process.env.SIGNER_SECRET = SIGNER_SECRET;
     app = await createTestApp([AppModule]);
   });
 

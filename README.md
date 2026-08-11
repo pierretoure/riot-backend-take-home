@@ -11,7 +11,7 @@ Node 22 is required (`.nvmrc` pins `22.23.1`); `pnpm` is the package manager (`p
 ```bash
 nvm use
 pnpm install
-cp .env.example .env   # then edit HMAC_SECRET (>= 32 characters)
+cp .env.example .env   # then edit SIGNER_SECRET (>= 32 characters)
 pnpm start:dev
 ```
 
@@ -20,7 +20,7 @@ The app listens on `http://localhost:3000` (`PORT` in `.env`). Swagger UI is at 
 ### Docker
 
 ```bash
-cp .env.example .env   # then edit HMAC_SECRET (>= 32 characters)
+cp .env.example .env   # then edit SIGNER_SECRET (>= 32 characters)
 docker compose up --build
 ```
 
@@ -28,7 +28,7 @@ This builds the multi-stage image (`deps` → `build` → `prod-deps` → `runti
 
 Both paths were run end-to-end while writing this README: `pnpm start:dev` served real traffic on `:3000`, and `docker compose up --build` produced a container reported as `healthy` by `docker compose ps`, responding `200 {"status":"ok"}` on `GET /health`.
 
-In both cases, without a valid `HMAC_SECRET` the process refuses to start (see [Environment variables](#environment-variables)).
+In both cases, without a valid `SIGNER_SECRET` the process refuses to start (see [Environment variables](#environment-variables)).
 
 ## Environment variables
 
@@ -36,12 +36,12 @@ Validated at startup by `src/config/env.schema.ts` (`zod`), via the `validate` o
 
 | Variable | Required | Default | Constraint |
 |---|---|---|---|
-| `HMAC_SECRET` | yes | — | string, >= 32 characters |
+| `SIGNER_SECRET` | yes | — | string, >= 32 characters |
 | `PORT` | no | `3000` | integer, 1–65535 |
 | `NODE_ENV` | no | `development` | one of `development`, `test`, `production` |
 | `LOG_LEVEL` | no | `log` | one of `fatal`, `error`, `warn`, `log`, `debug`, `verbose` |
 
-`.env.example` is versioned as a template; `.env` is git-ignored and must never be committed. There is no default secret anywhere in the code — a missing or too-short `HMAC_SECRET` is a fail-fast startup error, not a runtime `500`.
+`.env.example` is versioned as a template; `.env` is git-ignored and must never be committed. There is no default secret anywhere in the code — a missing or too-short `SIGNER_SECRET` is a fail-fast startup error, not a runtime `500`.
 
 ## API examples
 
@@ -225,7 +225,7 @@ providers: [{ provide: CIPHER, useClass: Base64Cipher }, CryptoService],
 
 - **The Base64 detection heuristic is irreducibly ambiguous.** A plaintext string that happens to be simultaneously valid Base64, valid UTF-8, and valid JSON (e.g. the literal string `"MzA="` sent as a property value) is indistinguishable from genuine ciphertext and will be decoded by `/decrypt` regardless of intent. Nothing short of an explicit format marker (e.g. an `enc:v1:` envelope, as demonstrated for illustration only in `RotCipher`) can remove this ambiguity, and adding one to `Base64Cipher` would deviate from the subject's literal Base64 output format — so it is left as a documented trade-off rather than "fixed".
 - **No Unicode NFC normalization in `canonicalize`**, unlike strict RFC 8785 (JCS). Two different Unicode representations of the same perceived character (e.g. precomposed vs. combining-mark form) produce two different canonical strings and therefore two different signatures. Accepted here because the signer and verifier are the same service and there is no cross-system normalization boundary.
-- **A single HMAC secret, with no rotation mechanism.** Changing `HMAC_SECRET` invalidates every signature issued under the previous one; there is no key ID or multi-key verification.
+- **A single HMAC secret, with no rotation mechanism.** Changing `SIGNER_SECRET` invalidates every signature issued under the previous one; there is no key ID or multi-key verification.
 - **Encryption only ever applies at depth 1**, per the subject: nested objects are encrypted as a single opaque Base64 blob, not recursively per leaf.
 - **`RotCipher`'s `looksEncrypted` is a bare prefix check** (`rot13:`) — deliberately weaker than `Base64Cipher`'s heuristic, since it exists solely to demonstrate that the `Cipher` port can be satisfied by a structurally different algorithm, not to be production-grade.
 

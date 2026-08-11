@@ -30,7 +30,7 @@ the flag as a literal path pattern, and the run dies with a misleading
 
 ## Environment
 
-`HMAC_SECRET` (>= 32 characters) must be set or the app refuses to start — copy
+`SIGNER_SECRET` (>= 32 characters) must be set or the app refuses to start — copy
 `.env.example` to `.env`. Never commit `.env`, and never let the secret reach a
 log, an error body, or the OpenAPI document.
 

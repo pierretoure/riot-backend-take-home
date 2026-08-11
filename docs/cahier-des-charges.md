@@ -228,12 +228,12 @@ Variables d'environnement, chargées via `@nestjs/config` (module global) et val
 
 | Variable | Requis | Défaut | Contrainte |
 |---|---|---|---|
-| `HMAC_SECRET` | oui | — | chaîne, ≥ 32 caractères |
+| `SIGNER_SECRET` | oui | — | chaîne, ≥ 32 caractères |
 | `PORT` | non | `3000` | entier 1–65535 |
 | `NODE_ENV` | non | `development` | `development` \| `test` \| `production` |
 | `LOG_LEVEL` | non | `log` | niveau NestJS : `fatal`, `error`, `warn`, `log`, `debug`, `verbose` |
 
-- **Fail-fast** : si `HMAC_SECRET` est absent ou trop court, l'application **refuse de démarrer** avec un message explicite. Aucune valeur par défaut de secret n'existe dans le code.
+- **Fail-fast** : si `SIGNER_SECRET` est absent ou trop court, l'application **refuse de démarrer** avec un message explicite. Aucune valeur par défaut de secret n'existe dans le code.
 - `.env.example` est versionné ; `.env` est ignoré par git.
 - Le secret n'est jamais journalisé, ni exposé dans une réponse d'erreur, ni présent dans Swagger.
 
@@ -327,7 +327,7 @@ L'exclusion de `src/**/test/**` dans le projet unitaire est nécessaire, sans qu
 install → lint → typecheck → test:unit → test:integration → test:e2e → build
 ```
 
-**Étapes bloquantes** : `test:unit`, `test:integration` et `test:e2e` sont des gates. Un seul test en échec fait échouer le job — aucun `continue-on-error`, aucune étape de test marquée optionnelle, et Jest est lancé avec `--ci --passWithNoTests=false` pour qu'une suite vide ou un snapshot manquant échoue au lieu de passer silencieusement. Le job s'exécute avec un `HMAC_SECRET` de test fourni par le workflow.
+**Étapes bloquantes** : `test:unit`, `test:integration` et `test:e2e` sont des gates. Un seul test en échec fait échouer le job — aucun `continue-on-error`, aucune étape de test marquée optionnelle, et Jest est lancé avec `--ci --passWithNoTests=false` pour qu'une suite vide ou un snapshot manquant échoue au lieu de passer silencieusement. Le job s'exécute avec un `SIGNER_SECRET` de test fourni par le workflow.
 
 La branche `main` est protégée : le merge d'une pull request exige le job CI vert.
 
@@ -351,7 +351,7 @@ La branche `main` est protégée : le merge d'une pull request exige le job CI v
 - [ ] Un payload ou une signature altérés retournent `400`.
 - [ ] Les propriétés non chiffrées traversent `/decrypt` sans modification.
 - [ ] Changer d'algorithme de chiffrement ne requiert de modifier qu'un seul binding de module.
-- [ ] L'application refuse de démarrer sans `HMAC_SECRET` valide.
+- [ ] L'application refuse de démarrer sans `SIGNER_SECRET` valide.
 - [ ] Aucune entrée client ne produit de `500`.
 - [ ] Swagger UI accessible et complet.
 - [ ] La CI est verte, tests unitaires, d'intégration et e2e bloquants.

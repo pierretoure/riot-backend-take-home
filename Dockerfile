@@ -49,7 +49,7 @@ USER nodeapp
 
 EXPOSE 3000
 
-# HMAC_SECRET (and any other configuration) must be supplied at runtime via
+# SIGNER_SECRET (and any other configuration) must be supplied at runtime via
 # the environment / docker-compose `.env`, never baked into the image.
 
 # Uses `node -e` rather than curl/wget: alpine/slim Node images don't ship

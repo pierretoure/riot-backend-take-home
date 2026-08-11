@@ -9,8 +9,8 @@ on:
   pull_request:
 
 env:
-  # HMAC_SECRET is required so we use a mocked one to ensure CI works as expected.
-  HMAC_SECRET: 'ci-hmac-secret-fixture-please-do-not-use-in-prod-32chars'
+  # SIGNER_SECRET is required so we use a mocked one to ensure CI works as expected.
+  SIGNER_SECRET: 'ci-hmac-secret-fixture-please-do-not-use-in-prod-32chars'
 
 permissions:
   contents: read

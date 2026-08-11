@@ -6,13 +6,13 @@ import { AppModule } from '../../app.module';
 
 // Distinctive secret so its absence from /docs-json can be asserted
 // unambiguously: the secret must never leak into the API documentation.
-const HMAC_SECRET = 'health-integration-test-secret-SENTINEL-32chars';
+const SIGNER_SECRET = 'health-integration-test-secret-SENTINEL-32chars';
 
 describe('GET /health and Swagger documentation (app assembly)', () => {
   let app: NestExpressApplication;
 
   beforeAll(async () => {
-    process.env.HMAC_SECRET = HMAC_SECRET;
+    process.env.SIGNER_SECRET = SIGNER_SECRET;
     // `setupSwagger` (the exact function production uses, see `src/main.ts`)
     // must run before `app.init()`, hence `createTestApp`'s `beforeInit` hook.
     app = await createTestApp([AppModule], setupSwagger);
@@ -43,6 +43,6 @@ describe('GET /health and Swagger documentation (app assembly)', () => {
     const response = await request(app.getHttpServer()).get('/docs-json');
 
     expect(response.status).toBe(200);
-    expect(JSON.stringify(response.body)).not.toContain(HMAC_SECRET);
+    expect(JSON.stringify(response.body)).not.toContain(SIGNER_SECRET);
   });
 });

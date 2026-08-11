@@ -5,13 +5,13 @@ import { HmacSha256Signer } from './hmac-sha256.signer';
 const SECRET = 'a'.repeat(32);
 
 function makeSigner(secret: string = SECRET): HmacSha256Signer {
-  return new HmacSha256Signer(new ConfigService({ HMAC_SECRET: secret }));
+  return new HmacSha256Signer(new ConfigService({ SIGNER_SECRET: secret }));
 }
 
 /**
- * A `ConfigService` that reports no `HMAC_SECRET`, regardless of the actual
+ * A `ConfigService` that reports no `SIGNER_SECRET`, regardless of the actual
  * test-runner process environment (which, in CI and in this repo's own test
- * scripts, does set `HMAC_SECRET` — see `pnpm test:unit`). A real
+ * scripts, does set `SIGNER_SECRET` — see `pnpm test:unit`). A real
  * `ConfigService` instance falls back to `process.env` when a key is absent
  * from its internal config, so it cannot reliably simulate "unconfigured"
  * here; a minimal stand-in exposing only the `get` method actually used by
@@ -95,7 +95,7 @@ describe('HmacSha256Signer', () => {
     const signer = makeSignerWithoutSecret();
 
     expect(() => signer.sign('payload')).toThrow(
-      'HMAC_SECRET is not configured',
+      'SIGNER_SECRET is not configured',
     );
   });
 });

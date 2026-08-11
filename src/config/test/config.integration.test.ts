@@ -4,7 +4,7 @@ import { validateEnv } from '../env.schema';
 
 /**
  * Integration-level coverage of the fail-fast requirement: the application
- * must refuse to start without a valid `HMAC_SECRET`. `env.schema.test.ts`
+ * must refuse to start without a valid `SIGNER_SECRET`. `env.schema.test.ts`
  * already unit-tests `validateEnv` in isolation; this test instead exercises
  * the real Nest wiring path used by `AppConfigModule`/`AppModule`.
  *
@@ -29,8 +29,8 @@ describe('Application bootstrap fails fast on invalid configuration', () => {
     process.env = ORIGINAL_ENV;
   });
 
-  it('rejects module compilation when HMAC_SECRET is missing', async () => {
-    delete process.env.HMAC_SECRET;
+  it('rejects module compilation when SIGNER_SECRET is missing', async () => {
+    delete process.env.SIGNER_SECRET;
 
     const configModule = ConfigModule.forRoot({
       isGlobal: true,
@@ -40,11 +40,11 @@ describe('Application bootstrap fails fast on invalid configuration', () => {
 
     await expect(
       Test.createTestingModule({ imports: [configModule] }).compile(),
-    ).rejects.toThrow(/HMAC_SECRET/);
+    ).rejects.toThrow(/SIGNER_SECRET/);
   });
 
-  it('rejects module compilation when HMAC_SECRET is too short, never leaking it', async () => {
-    process.env.HMAC_SECRET = SENTINEL;
+  it('rejects module compilation when SIGNER_SECRET is too short, never leaking it', async () => {
+    process.env.SIGNER_SECRET = SENTINEL;
 
     const configModule = ConfigModule.forRoot({
       isGlobal: true,
@@ -61,12 +61,12 @@ describe('Application bootstrap fails fast on invalid configuration', () => {
 
     expect(thrown).toBeInstanceOf(Error);
     const message = (thrown as Error).message;
-    expect(message).toMatch(/HMAC_SECRET/);
+    expect(message).toMatch(/SIGNER_SECRET/);
     expect(message).not.toContain(SENTINEL);
   });
 
-  it('compiles successfully with a valid HMAC_SECRET', async () => {
-    process.env.HMAC_SECRET = 'a'.repeat(32);
+  it('compiles successfully with a valid SIGNER_SECRET', async () => {
+    process.env.SIGNER_SECRET = 'a'.repeat(32);
 
     const configModule = ConfigModule.forRoot({
       isGlobal: true,

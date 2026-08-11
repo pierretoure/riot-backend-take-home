@@ -4,13 +4,13 @@ import type { NestExpressApplication } from '@nestjs/platform-express';
 import { createTestApp } from '../../testing/create-test-app';
 import { SignatureModule } from '../signature.module';
 
-const HMAC_SECRET = 'a'.repeat(32);
+const SIGNER_SECRET = 'a'.repeat(32);
 
 describe('POST /verify (integration)', () => {
   let app: NestExpressApplication;
 
   beforeAll(async () => {
-    process.env.HMAC_SECRET = HMAC_SECRET;
+    process.env.SIGNER_SECRET = SIGNER_SECRET;
     app = await createTestApp([
       ConfigModule.forRoot({ isGlobal: true, ignoreEnvFile: true }),
       SignatureModule,

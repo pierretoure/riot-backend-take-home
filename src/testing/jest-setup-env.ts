@@ -11,5 +11,5 @@
  * exporting their own) stays in control. `dotenv` likewise never overrides
  * an existing variable, so a local `.env` cannot break these defaults.
  */
-process.env.HMAC_SECRET ??= 'jest-default-hmac-secret-32-chars-min';
+process.env.SIGNER_SECRET ??= 'jest-default-hmac-secret-32-chars-min';
 process.env.LOG_LEVEL ??= 'error';

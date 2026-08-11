@@ -4,7 +4,7 @@ const VALID_SECRET = 'a'.repeat(32);
 
 function baseEnv(overrides: Record<string, string | undefined> = {}) {
   const env: Record<string, string | undefined> = {
-    HMAC_SECRET: VALID_SECRET,
+    SIGNER_SECRET: VALID_SECRET,
     ...overrides,
   };
 
@@ -30,7 +30,7 @@ describe('validateEnv', () => {
     );
 
     expect(result).toEqual({
-      HMAC_SECRET: VALID_SECRET,
+      SIGNER_SECRET: VALID_SECRET,
       PORT: 4000,
       NODE_ENV: 'production',
       LOG_LEVEL: 'debug',
@@ -46,23 +46,23 @@ describe('validateEnv', () => {
     expect(result.LOG_LEVEL).toBe('log');
   });
 
-  describe('HMAC_SECRET', () => {
-    it('rejects a missing HMAC_SECRET, naming the variable', () => {
+  describe('SIGNER_SECRET', () => {
+    it('rejects a missing SIGNER_SECRET, naming the variable', () => {
       const env = baseEnv();
-      delete env.HMAC_SECRET;
+      delete env.SIGNER_SECRET;
 
-      expect(() => validateEnv(env)).toThrow(/HMAC_SECRET/);
+      expect(() => validateEnv(env)).toThrow(/SIGNER_SECRET/);
     });
 
     it('rejects a secret of 31 characters (below the boundary)', () => {
       expect(() =>
-        validateEnv(baseEnv({ HMAC_SECRET: 'a'.repeat(31) })),
-      ).toThrow(/HMAC_SECRET/);
+        validateEnv(baseEnv({ SIGNER_SECRET: 'a'.repeat(31) })),
+      ).toThrow(/SIGNER_SECRET/);
     });
 
     it('accepts a secret of exactly 32 characters (at the boundary)', () => {
       expect(() =>
-        validateEnv(baseEnv({ HMAC_SECRET: 'a'.repeat(32) })),
+        validateEnv(baseEnv({ SIGNER_SECRET: 'a'.repeat(32) })),
       ).not.toThrow();
     });
 
@@ -71,7 +71,7 @@ describe('validateEnv', () => {
 
       let thrown: unknown;
       try {
-        validateEnv(baseEnv({ HMAC_SECRET: sentinel }));
+        validateEnv(baseEnv({ SIGNER_SECRET: sentinel }));
       } catch (error) {
         thrown = error;
       }
@@ -79,7 +79,7 @@ describe('validateEnv', () => {
       expect(thrown).toBeInstanceOf(Error);
       const message = (thrown as Error).message;
       expect(message).not.toContain(sentinel);
-      expect(message).toMatch(/HMAC_SECRET/);
+      expect(message).toMatch(/SIGNER_SECRET/);
     });
   });
 

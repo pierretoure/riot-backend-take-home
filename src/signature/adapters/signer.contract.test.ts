@@ -30,7 +30,9 @@ const implementations: Array<[string, () => Signer]> = [
   [
     'HmacSha256Signer',
     () =>
-      new HmacSha256Signer(new ConfigService({ HMAC_SECRET: 'a'.repeat(32) })),
+      new HmacSha256Signer(
+        new ConfigService({ SIGNER_SECRET: 'a'.repeat(32) }),
+      ),
   ],
   ['UppercaseHexSigner', () => new UppercaseHexSigner()],
 ];

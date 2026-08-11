@@ -34,7 +34,7 @@ const jsonObjectArbitrary: fc.Arbitrary<JsonObject> = fc.dictionary(
 
 function makeService(): SignatureService {
   const signer = new HmacSha256Signer(
-    new ConfigService({ HMAC_SECRET: 'a'.repeat(32) }),
+    new ConfigService({ SIGNER_SECRET: 'a'.repeat(32) }),
   );
   return new SignatureService(signer);
 }

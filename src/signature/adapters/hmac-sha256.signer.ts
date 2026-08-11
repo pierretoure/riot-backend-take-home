@@ -8,7 +8,7 @@ import type { Signer } from '../ports/signer.port';
  * `node:crypto`. The secret has no default: it is always read from
  * `ConfigService`, which itself only exposes it once the env schema
  * validation (`src/config/env.schema.ts`) has confirmed a valid
- * `HMAC_SECRET` is present (fail-fast at startup).
+ * `SIGNER_SECRET` is present (fail-fast at startup).
  */
 @Injectable()
 export class HmacSha256Signer implements Signer {
@@ -41,9 +41,9 @@ export class HmacSha256Signer implements Signer {
    * in an error message or thrown exception.
    */
   private secret(): string {
-    const secret = this.configService.get<string>('HMAC_SECRET');
+    const secret = this.configService.get<string>('SIGNER_SECRET');
     if (typeof secret !== 'string' || secret.length === 0) {
-      throw new Error('HMAC_SECRET is not configured');
+      throw new Error('SIGNER_SECRET is not configured');
     }
     return secret;
   }
