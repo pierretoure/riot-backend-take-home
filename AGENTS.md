@@ -34,6 +34,19 @@ the flag as a literal path pattern, and the run dies with a misleading
 `.env.example` to `.env`. Never commit `.env`, and never let the secret reach a
 log, an error body, or the OpenAPI document.
 
+## Dependencies
+
+**Every version in `package.json` is pinned exactly — no `^`, no `~`.** This is
+a cryptographic service: a range accepts an upgrade nobody reviewed, and a
+change in how a dependency encodes, parses or compares bytes breaks correctness
+silently, without failing a build. Pinning makes every upgrade an explicit,
+reviewable commit.
+
+**YOU MUST keep it that way.** When adding a package, install it and then
+replace the range with the resolved version (`pnpm add x && pnpm ls x`). To
+upgrade, change the version deliberately, run `pnpm install && pnpm test`, and
+commit the `package.json` and `pnpm-lock.yaml` changes together.
+
 ## Tests
 
 Every change ships with tests. Three Jest projects, three globs — a file in the
