@@ -111,7 +111,7 @@ src/
 │   └── json/
 │       ├── canonicalize.ts             RFC 8785 (tri récursif des clés)
 │       ├── canonicalize.test.ts
-│       ├── canonicalize.property.test.ts
+│       ├── canonicalize.invariants.test.ts
 │       └── json.types.ts               JsonValue, JsonObject
 ├── crypto/
 │   ├── ports/cipher.port.ts
@@ -120,8 +120,7 @@ src/
 │   │   ├── base64.cipher.test.ts
 │   │   └── cipher.contract.test.ts     suite partagée, jouée contre tous les adapters
 │   ├── crypto.service.ts
-│   ├── crypto.service.test.ts
-│   ├── crypto.service.property.test.ts round-trip decrypt(encrypt(x)) === x
+│   ├── crypto.service.invariants.test.ts round-trip decrypt(encrypt(x)) === x
 │   ├── crypto.controller.ts
 │   ├── crypto.module.ts
 │   ├── dto/
@@ -136,8 +135,7 @@ src/
 │   │   ├── hmac-sha256.signer.test.ts
 │   │   └── signer.contract.test.ts     suite partagée, jouée contre tous les adapters
 │   ├── signature.service.ts
-│   ├── signature.service.test.ts
-│   ├── signature.service.property.test.ts
+│   ├── signature.service.invariants.test.ts
 │   ├── signature.controller.ts
 │   ├── signature.module.ts
 │   ├── dto/
@@ -302,7 +300,7 @@ Variables d'environnement, chargées via `@nestjs/config` (module global) et val
 | **Contrat d'interchangeabilité** (`*.contract.test.ts`) | Suite partagée exprimant le contrat du port, exécutée via `describe.each` contre `Base64Cipher` **et** l'implémentation alternative — l'abstraction est prouvée, pas seulement affirmée |
 | **Intégration** (`src/<domaine>/test/*.integration.test.ts`, Supertest) | Les 4 routes sur une application Nest réelle, une requête à la fois : reproduction littérale de **tous** les exemples du sujet ; invariance à l'ordre des propriétés sur `/sign` et `/verify` ; payload altéré → `400` ; table complète des cas d'erreur de la section 6 |
 | **End-to-end** (`test/*.e2e.test.ts`, Supertest) | Les deux exigences de cohérence du sujet, en enchaînant les requêtes : `POST /encrypt` → `POST /decrypt` restitue le payload initial (types inclus) ; `POST /sign` → `POST /verify` retourne `204`. Aucune valeur intermédiaire codée en dur — la sortie du premier appel alimente le second |
-| **Property-based (fast-check)** | `decrypt(encrypt(x))` ≡ `x` · `verify(sign(x), x)` → `204` · `canonicalize(x)` ≡ `canonicalize(shuffleKeys(x))` · `canonicalize(x)` ≠ `canonicalize(y)` pour `x ≠ y`. Générateur de JSON arbitraire incluant unicode, chaînes vides, nombres négatifs et flottants, `null`, imbrication profonde |
+| **Property-based (fast-check)** | `decrypt(encrypt(x))` ≡ `x` · `verify(sign(x), x)` → `204` · `canonicalize(x)` ≡ `canonicalize(shuffleKeys(x))` · `canonicalize(x)` ≠ `canonicalize(y)` pour `x ≠ y`. Un arbitraire par type JSON, joué via `describe.each` pour qu'aucun type ne puisse rester non tiré ; les cas limites (unicode NFC/NFD, graphèmes multi-code-points, chaînes vides, `__proto__`, clés numériques) sont injectés dans les générateurs |
 
 Jest est configuré en trois projets, pour pouvoir lancer la boucle rapide seule pendant le développement :
 

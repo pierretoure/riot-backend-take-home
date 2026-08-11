@@ -66,7 +66,12 @@ wrong place is silently never run:
 - **Never weaken a test or a lint rule to get to green.**
 - Adapters are covered by `*.contract.test.ts`, run with `describe.each`
   against every implementation of the port.
-- Property-based tests pin the fast-check seed so runs reproduce.
+- Property-based tests use fast-check with the seed pinned in
+  `src/testing/json-arbitraries.ts`, so every run draws the same samples and a
+  failure always reproduces.
+- **Every JSON type must be exercised on every run.** Iterate
+  `typedArbitraries`/`typedObjectArbitraries` with `describe.each` rather than
+  drawing from a single `fc.oneof`, which can leave a whole branch undrawn.
 
 ## Design decisions
 
