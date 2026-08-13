@@ -104,4 +104,49 @@ describe('crypto errors (/encrypt, /decrypt)', () => {
       expect(response.status).toBe(400);
     });
   });
+
+  describe('RFC 8785 input constraints', () => {
+    it.each([
+      ['/encrypt', '{"a":1,"a":2}'],
+      ['/decrypt', '{"a":"MzA=","a":"MzE="}'],
+      ['/encrypt', '{"outer":{"a":1,"a":2}}'],
+    ])(
+      'rejects a duplicate property name on %s with 400',
+      async (route, body) => {
+        const response = await request(app.getHttpServer())
+          .post(route)
+          .set('Content-Type', 'application/json')
+          .send(body);
+
+        expect(response.status).toBe(400);
+        expect(response.body).toMatchObject({
+          statusCode: 400,
+          error: 'Bad Request',
+        });
+      },
+    );
+
+    it.each(['/encrypt', '/decrypt'])(
+      'rejects a body containing invalid UTF-8 on %s with 400',
+      async (route) => {
+        const invalid = Buffer.concat([
+          Buffer.from('{"a":"', 'utf8'),
+          Buffer.from([0xff]),
+          Buffer.from('"}', 'utf8'),
+        ]);
+
+        const response = await request(app.getHttpServer())
+          .post(route)
+          .set('Content-Type', 'application/json')
+          .serialize((data: Buffer) => data as unknown as string)
+          .send(invalid);
+
+        expect(response.status).toBe(400);
+        expect(response.body).toMatchObject({
+          statusCode: 400,
+          error: 'Bad Request',
+        });
+      },
+    );
+  });
 });
