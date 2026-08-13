@@ -4,8 +4,8 @@ import {
   type NestModule,
 } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { StrictJsonBodyMiddleware } from '../common/middleware/strict-json-body.middleware';
 import { HmacSha256Signer } from './adapters/hmac-sha256.signer';
-import { StrictJsonBodyMiddleware } from './middleware/strict-json-body.middleware';
 import { SIGNER } from './ports/signer.port';
 import { SignatureController } from './signature.controller';
 import { SignatureService } from './signature.service';
@@ -28,11 +28,6 @@ import { SignatureService } from './signature.service';
   ],
 })
 export class SignatureModule implements NestModule {
-  /**
-   * The raw-body RFC 8785 checks are bound here rather than globally: they
-   * are a canonicalization concern, and only these two routes canonicalize.
-   * See `StrictJsonBodyMiddleware`.
-   */
   configure(consumer: MiddlewareConsumer): void {
     consumer.apply(StrictJsonBodyMiddleware).forRoutes('sign', 'verify');
   }
