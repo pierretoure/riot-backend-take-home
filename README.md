@@ -53,6 +53,17 @@ Any invalid value throws before the app starts listening.
 | `NODE_ENV`      | no       | `development` | one of `development`, `test`, `production`                 |
 | `LOG_LEVEL`     | no       | `log`         | one of `fatal`, `error`, `warn`, `log`, `debug`, `verbose` |
 
+### Generating a `SIGNER_SECRET`
+
+```bash
+openssl rand -hex 16
+```
+
+It prints a 32-character hex string. OpenSSL ships with macOS and most Linux
+distributions; on Windows it comes with [Git for Windows](https://git-scm.com/download/win)
+(use Git Bash), or see the [OpenSSL binaries page](https://openssl-library.org/source/)
+for a standalone install.
+
 ## Tests
 
 ```bash
@@ -80,21 +91,21 @@ HTTP  ──►  Controllers (routes, HTTP codes, Swagger, request parsing)
 ## Signing and RFC 8785
 
 `/sign` and `/verify` compute the HMAC over the canonical form of the payload, so
-the signature depends on the JSON *value* and not on how it was written. That
+the signature depends on the JSON _value_ and not on how it was written. That
 canonical form follows [RFC 8785 (JCS)](https://datatracker.ietf.org/doc/html/rfc8785):
 keys sorted by UTF-16 code unit at every level, no insignificant whitespace,
 ECMAScript number formatting, minimal string escaping, UTF-8 output. The RFC's
 own sorting test vector is replayed in the unit suite.
 
-Where the RFC requires an implementation to *fail* rather than produce output,
+Where the RFC requires an implementation to _fail_ rather than produce output,
 these two routes return **400** instead of signing something ambiguous:
 
-| Input | Why it is rejected |
-|---|---|
-| Duplicate property names (`{"a":1,"a":2}`) | RFC 8785 §3.1. `JSON.parse` silently keeps the last one, so it would sign the same bytes as `{"a":2}` |
-| Invalid UTF-8 in the request body | I-JSON (RFC 7493). Lenient decoding would substitute U+FFFD and sign a payload the client never sent |
-| `NaN` / `Infinity` (e.g. `{"a":1e400}`, which parses to `Infinity`) | RFC 8785 §3.2.2.3. `JSON.stringify` would emit `null` instead |
-| Lone surrogates (e.g. `"\ud800"`) | RFC 8785 §3.2.2.2. Not encodable as UTF-8, so there is no canonical byte sequence |
+| Input                                                               | Why it is rejected                                                                                    |
+| ------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| Duplicate property names (`{"a":1,"a":2}`)                          | RFC 8785 §3.1. `JSON.parse` silently keeps the last one, so it would sign the same bytes as `{"a":2}` |
+| Invalid UTF-8 in the request body                                   | I-JSON (RFC 7493). Lenient decoding would substitute U+FFFD and sign a payload the client never sent  |
+| `NaN` / `Infinity` (e.g. `{"a":1e400}`, which parses to `Infinity`) | RFC 8785 §3.2.2.3. `JSON.stringify` would emit `null` instead                                         |
+| Lone surrogates (e.g. `"\ud800"`)                                   | RFC 8785 §3.2.2.2. Not encodable as UTF-8, so there is no canonical byte sequence                     |
 
 These checks are scoped to `/sign` and `/verify`. `/encrypt` and `/decrypt` never
 canonicalize, so they keep accepting any body `JSON.parse` accepts.
