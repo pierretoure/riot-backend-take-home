@@ -1,7 +1,10 @@
 import { Test } from '@nestjs/testing';
 import type { ModuleMetadata } from '@nestjs/common';
 import type { NestExpressApplication } from '@nestjs/platform-express';
-import { applyGlobalConfig } from '../common/apply-global-config';
+import {
+  NEST_APP_OPTIONS,
+  applyGlobalConfig,
+} from '../common/apply-global-config';
 
 /**
  * Builds an initialized Nest application for integration/e2e tests, wired
@@ -23,7 +26,8 @@ export async function createTestApp(
 ): Promise<NestExpressApplication> {
   const moduleRef = await Test.createTestingModule({ imports }).compile();
 
-  const app = moduleRef.createNestApplication<NestExpressApplication>();
+  const app =
+    moduleRef.createNestApplication<NestExpressApplication>(NEST_APP_OPTIONS);
   applyGlobalConfig(app);
   beforeInit?.(app);
 

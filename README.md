@@ -77,10 +77,32 @@ HTTP  ──►  Controllers (routes, HTTP codes, Swagger, request parsing)
            Adapters (concrete implementations: Base64, HMAC-SHA256)
 ```
 
+## Signing and RFC 8785
+
+`/sign` and `/verify` compute the HMAC over the canonical form of the payload, so
+the signature depends on the JSON *value* and not on how it was written. That
+canonical form follows [RFC 8785 (JCS)](https://datatracker.ietf.org/doc/html/rfc8785):
+keys sorted by UTF-16 code unit at every level, no insignificant whitespace,
+ECMAScript number formatting, minimal string escaping, UTF-8 output. The RFC's
+own sorting test vector is replayed in the unit suite.
+
+Where the RFC requires an implementation to *fail* rather than produce output,
+these two routes return **400** instead of signing something ambiguous:
+
+| Input | Why it is rejected |
+|---|---|
+| Duplicate property names (`{"a":1,"a":2}`) | RFC 8785 §3.1. `JSON.parse` silently keeps the last one, so it would sign the same bytes as `{"a":2}` |
+| Invalid UTF-8 in the request body | I-JSON (RFC 7493). Lenient decoding would substitute U+FFFD and sign a payload the client never sent |
+| `NaN` / `Infinity` (e.g. `{"a":1e400}`, which parses to `Infinity`) | RFC 8785 §3.2.2.3. `JSON.stringify` would emit `null` instead |
+| Lone surrogates (e.g. `"\ud800"`) | RFC 8785 §3.2.2.2. Not encodable as UTF-8, so there is no canonical byte sequence |
+
+These checks are scoped to `/sign` and `/verify`. `/encrypt` and `/decrypt` never
+canonicalize, so they keep accepting any body `JSON.parse` accepts.
+
 ## Known limitations
 
 - **The Base64 detection heuristic is irreducibly ambiguous.** A plaintext string that happens to be simultaneously valid Base64, valid UTF-8, and valid JSON (e.g. the literal string `"MzA="` sent as a property value) is indistinguishable from genuine ciphertext and will be decoded by `/decrypt` regardless of intent. Nothing short of an explicit format marker (e.g. an `enc:v1:` envelope) can remove this ambiguity, and adding one to `Base64Cipher` would deviate from the subject's literal Base64 output format — so it is left as a documented trade-off rather than "fixed".
-- **No Unicode NFC normalization in `canonicalize`**, unlike strict RFC 8785 (JCS). Two different Unicode representations of the same perceived character (e.g. precomposed vs. combining-mark form) produce two different canonical strings and therefore two different signatures. Accepted here because the signer and verifier are the same service and there is no cross-system normalization boundary.
+- **Two Unicode spellings of the same perceived character sign differently.** This is specified behaviour rather than a shortcut: RFC 8785 (JCS) places Unicode normalization out of scope and requires that "all components involved MUST preserve Unicode string data 'as is'". A precomposed `é` (U+00E9) and its decomposed form (U+0065 U+0301) are therefore different data, and normalizing them here would be a violation of the spec, not an improvement. Clients that need the two forms to be interchangeable must normalize before signing.
 - **A single HMAC secret, with no rotation mechanism.** Changing `SIGNER_SECRET` invalidates every signature issued under the previous one; there is no key ID or multi-key verification.
 - **Encryption only ever applies at depth 1**, per the subject: nested objects are encrypted as a single opaque Base64 blob, not recursively per leaf.
 

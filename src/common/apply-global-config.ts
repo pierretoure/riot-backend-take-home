@@ -4,6 +4,19 @@ import { AllExceptionsFilter } from './filters/all-exceptions.filter';
 import { LoggingInterceptor } from './interceptors/logging.interceptor';
 
 /**
+ * Application-creation options shared between production (`src/main.ts`)
+ * and tests (`src/testing/create-test-app.ts`), for the same reason as
+ * `applyGlobalConfig` below: they must not diverge.
+ *
+ * `rawBody` keeps the undecoded request body available on `req.rawBody`.
+ * `StrictJsonBodyMiddleware` needs it to enforce the two RFC 8785 input
+ * constraints that `JSON.parse` erases — invalid UTF-8 (silently replaced
+ * with U+FFFD) and duplicate property names (silently collapsed to the last
+ * occurrence).
+ */
+export const NEST_APP_OPTIONS = { rawBody: true } as const;
+
+/**
  * Applies the global HTTP configuration shared between production
  * (`src/main.ts`) and tests (`src/testing/create-test-app.ts`): request
  * validation, the global exception filter, the logging interceptor, and the

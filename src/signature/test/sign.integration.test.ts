@@ -53,9 +53,11 @@ describe('POST /sign (integration)', () => {
 
   it('produces different signatures for the NFC and NFD spellings of a character', async () => {
     // Same perceived text ("cafe" + acute accent), two Unicode encodings:
-    // precomposed U+00E9 versus decomposed "e" + U+0301. `canonicalize`
-    // deliberately skips the RFC 8785 NFC normalization step, so the two
-    // spellings stay distinct payloads down to the signature.
+    // precomposed U+00E9 versus decomposed "e" + U+0301. RFC 8785 requires
+    // string data to be preserved as is and rules Unicode normalization out
+    // of scope, so the two spellings are different data and stay distinct
+    // payloads down to the signature. This is JCS conformance, not a
+    // shortcut around it.
     const composed = 'caf\u00e9';
     const decomposed = 'cafe\u0301';
     expect(composed).not.toBe(decomposed);

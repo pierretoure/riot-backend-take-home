@@ -15,7 +15,10 @@ export class HmacSha256Signer implements Signer {
   constructor(private readonly configService: ConfigService) {}
 
   sign(payload: string): string {
-    return createHmac('sha256', this.secret()).update(payload).digest('hex');
+    // RFC 8785 requires the result to be encoded in UTF-8. Explicitly passing 'utf8' here ensures this, rather than relying on Node's default encoding.
+    return createHmac('sha256', this.secret())
+      .update(payload, 'utf8')
+      .digest('hex');
   }
 
   verify(payload: string, signature: string): boolean {

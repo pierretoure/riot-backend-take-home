@@ -3,7 +3,10 @@ import { ConfigService } from '@nestjs/config';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import helmet from 'helmet';
 import { AppModule } from './app.module';
-import { applyGlobalConfig } from './common/apply-global-config';
+import {
+  NEST_APP_OPTIONS,
+  applyGlobalConfig,
+} from './common/apply-global-config';
 import { setupSwagger } from './common/setup-swagger';
 import type { Env } from './config/env.schema';
 
@@ -16,7 +19,10 @@ import type { Env } from './config/env.schema';
  * make those tests lie about production behaviour.
  */
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(
+    AppModule,
+    NEST_APP_OPTIONS,
+  );
 
   app.use(helmet());
   applyGlobalConfig(app);

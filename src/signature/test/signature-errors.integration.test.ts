@@ -116,6 +116,81 @@ describe('/sign and /verify error handling', () => {
     expect(response.status).toBe(413);
   });
 
+  describe('RFC 8785 input constraints', () => {
+    it.each([
+      ['/sign', '{"a":1,"a":2}'],
+      ['/verify', '{"signature":"00","data":{},"data":{}}'],
+      ['/sign', '{"outer":{"a":1,"a":2}}'],
+    ])(
+      'rejects a duplicate property name on %s with 400',
+      async (route, body) => {
+        // RFC 8785 §3.1 forbids duplicate names. Node's `JSON.parse` keeps
+        // the last one, so `{"a":1,"a":2}` and `{"a":2}` would otherwise
+        // receive the same signature.
+        const response = await request(app.getHttpServer())
+          .post(route)
+          .set('Content-Type', 'application/json')
+          .send(body);
+
+        expect(response.status).toBe(400);
+        expectErrorBody(response.body, 400);
+      },
+    );
+
+    it('rejects a body containing invalid UTF-8 with 400', async () => {
+      const invalid = Buffer.concat([
+        Buffer.from('{"a":"', 'utf8'),
+        Buffer.from([0xff]),
+        Buffer.from('"}', 'utf8'),
+      ]);
+
+      const response = await request(app.getHttpServer())
+        .post('/sign')
+        .set('Content-Type', 'application/json')
+        // Superagent JSON-serializes a Buffer into `{"type":"Buffer",...}`
+        // by default. The identity serializer sends the bytes untouched,
+        // which is the whole point of this case. Its Node implementation
+        // accepts a Buffer, but the bundled type declaration only admits a
+        // string — hence the cast.
+        .serialize((data: Buffer) => data as unknown as string)
+        .send(invalid);
+
+      expect(response.status).toBe(400);
+      expectErrorBody(response.body, 400);
+    });
+
+    it('rejects a non-finite number with 400 rather than 500', async () => {
+      // `1e400` overflows to `Infinity` during parsing; canonicalizing it
+      // must fail loudly instead of signing the string "null".
+      const response = await request(app.getHttpServer())
+        .post('/sign')
+        .set('Content-Type', 'application/json')
+        .send('{"a":1e400}');
+
+      expect(response.status).toBe(400);
+      expectErrorBody(response.body, 400);
+    });
+
+    it('rejects a lone surrogate with 400 rather than 500', async () => {
+      const response = await request(app.getHttpServer())
+        .post('/sign')
+        .set('Content-Type', 'application/json')
+        .send('{"a":"\\ud800"}');
+
+      expect(response.status).toBe(400);
+      expectErrorBody(response.body, 400);
+    });
+
+    it('still accepts a well-formed surrogate pair', async () => {
+      const response = await request(app.getHttpServer())
+        .post('/sign')
+        .set('Content-Type', 'application/json')
+        .send('{"a":"\\ud83d\\ude00"}');
+
+      expect(response.status).toBe(200);
+    });
+  });
+
   it('never returns 500 for pathological input', async () => {
     const pathologicalBodies: string[] = [
       JSON.stringify(null),
